@@ -177,3 +177,33 @@ export async function deleteGoal(goalId) {
   }
   return request(API_URL, `/goals/${encodeURIComponent(goalId)}`, { method: 'DELETE' })
 }
+
+/** Deposit suggested surplus into the savings pocket (mock ledger; live contributes to emergency goal when present). */
+export async function depositToPocket(amount) {
+  const amt = Math.max(0, Math.round(Number(amount) || 0))
+  if (amt <= 0) {
+    const err = new Error('Invalid deposit amount')
+    err.code = 'INVALID_AMOUNT'
+    throw err
+  }
+
+  if (!API_URL) {
+    await delay(520)
+    const { depositMockPocket } = await import('../data/mockData')
+    return depositMockPocket(amt)
+  }
+
+  const dash = await getDashboard()
+  const goals = dash.goals || dash.Goals || []
+  const emergency =
+    goals.find((g) => g.id === 'emergency') ||
+    goals.find((g) => /emergency|buffer|rainy/i.test(String(g.name || '')))
+
+  if (emergency?.id) {
+    await contributeGoal(emergency.id, amt)
+  }
+
+  // Client ledger keeps pocket fields in sync for demo UX when backend has no deposit route.
+  const { depositMockPocket } = await import('../data/mockData')
+  return depositMockPocket(amt)
+}

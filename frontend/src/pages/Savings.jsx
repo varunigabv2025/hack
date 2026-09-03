@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { PiggyBank, ArrowRight, Sparkles } from 'lucide-react'
+import { PiggyBank } from 'lucide-react'
 import { useMoney } from '../hooks/useMoney'
 import { useApp } from '../context/AppContext'
 import { useLang } from '../hooks/useLang'
@@ -13,12 +12,6 @@ export default function Savings() {
   const { data, status, refresh } = useApp()
   const { formatMoney } = useMoney()
   const { t } = useLang()
-  const [saved, setSaved] = useState(false)
-
-  function handleSave() {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
-  }
 
   return (
     <AppLayout>
@@ -44,7 +37,7 @@ export default function Savings() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{t('savingsActivity')}</p>
               <ul className="mt-3 divide-y divide-line/60">
                 {data.savings.activity.map((row) => (
-                  <li key={`${row.date}-${row.amount}`} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                  <li key={`${row.date}-${row.amount}-${row.note}`} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
                     <div>
                       <p className="text-sm font-medium text-ink">{row.note || 'Sweep'}</p>
                       <p className="text-xs text-muted">{row.date}</p>
@@ -61,7 +54,6 @@ export default function Savings() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              whileHover={{ y: -4 }}
               className="card text-center"
             >
               <p className="text-xs uppercase tracking-wide text-muted">{t('currentBalance')}</p>
@@ -71,34 +63,12 @@ export default function Savings() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              whileHover={{ y: -4 }}
               className="card text-center"
             >
               <p className="text-xs uppercase tracking-wide text-muted">{t('savedThisMonth')}</p>
               <p className="mt-2 text-3xl font-bold text-gradient-burgundy">{formatMoney(data.savings.monthlySaved)}</p>
             </motion.div>
           </div>
-
-          {data.savings.suggested > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="card-glow-burgundy rounded-2xl p-6 text-center text-white"
-            >
-              <Sparkles className="mx-auto mb-3 h-6 w-6" />
-              <p className="text-lg font-bold">{t('canSafelySaveToday', { amount: formatMoney(data.savings.suggested) })}</p>
-              <p className="mt-1 text-sm text-white/80">{t('basedOnSurplus')}</p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleSave}
-                className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-burgundy shadow-lg transition-all"
-              >
-                {saved ? t('savedSuccess') : <><ArrowRight className="h-4 w-4" /> {t('saveNow')}</>}
-              </motion.button>
-            </motion.div>
-          )}
         </motion.div>
       ) : null}
     </AppLayout>

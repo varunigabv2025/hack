@@ -1,5 +1,7 @@
 /** Central mock payloads. Frontend only displays these — no scoring math. */
 
+import { projectPocketDeposit } from '../lib/savingsPocketDeposit'
+
 export const mockUser = {
   name: 'User',
   occupation: 'Uber',
@@ -163,6 +165,7 @@ const PROFILE_KEY = 're_profile'
 const EXPENSE_KEY = 're_expenses'
 const LOAN_KEY = 're_loans'
 const GOAL_KEY = 're_goals'
+const POCKET_KEY = 're_pocket'
 
 const seedExpenses = [
   { id: 'exp-1', date: '2026-09-03', amount: 500, category: 'Food', essential: true, description: 'Groceries for the week' },
@@ -223,11 +226,47 @@ function loadList(key, fallback) {
   }
 }
 
+function loadPocketPatch() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(POCKET_KEY) || 'null')
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function applyPocketPatch(dashboard) {
+  const patch = loadPocketPatch()
+  if (!patch) return dashboard
+  const next = { ...dashboard }
+  if (patch.savings) {
+    const balance = patch.savings.balance
+    next.savings = { ...dashboard.savings, ...patch.savings }
+    next.goals = (dashboard.goals || []).map((g) =>
+      g.id === 'emergency' && balance != null ? { ...g, current: balance } : g,
+    )
+  }
+  if (patch.income) {
+    next.income = { ...dashboard.income, ...patch.income }
+  }
+  if (patch.resilience) {
+    next.resilience = {
+      ...dashboard.resilience,
+      ...patch.resilience,
+      factors: {
+        ...(dashboard.resilience?.factors || {}),
+        ...(patch.resilience.factors || {}),
+      },
+    }
+  }
+  return next
+}
+
 function attachLedger(dashboard) {
   const expenses = loadList(EXPENSE_KEY, seedExpenses)
   const loans = loadList(LOAN_KEY, [])
   const goals = loadList(GOAL_KEY, null)
-  return {
+  const withLedger = {
     ...dashboard,
     expenses,
     expenseSummary: summariseExpenses(expenses),
@@ -235,6 +274,7 @@ function attachLedger(dashboard) {
     loanRisk: assessLoanRisk(loans, dashboard.income?.baseline),
     goals: Array.isArray(goals) ? goals : dashboard.goals,
   }
+  return applyPocketPatch(withLedger)
 }
 
 export function persistExpenses(expenses) {
@@ -300,6 +340,78 @@ export function deleteMockGoal(goalId) {
   return getMockDashboard()
 }
 
+/** Persist a surplus sweep into the savings pocket (mock / offline ledger). */
+export function depositMockPocket(amount) {
+  const dash = getMockDashboard()
+  const projected = projectPocketDeposit(dash, amount)
+  if (projected.amount <= 0) {
+    const err = new Error(
+      projected.available <= 0 ? 'Nothing left to save today' : 'Invalid deposit amount',
+    )
+    err.code = projected.available <= 0 ? 'NOTHING_LEFT' : 'INVALID_AMOUNT'
+    throw err
+  }
+
+  const prevScore = Math.min(100, Math.max(0, Math.round(Number(dash.resilience?.score) || 0)))
+  // Modest, trustworthy bump tied to the deposit — not a game reward curve.
+  const scoreBump = Math.min(5, Math.max(1, Math.round(projected.amount / 40)))
+  const nextScore = Math.min(100, prevScore + scoreBump)
+  const bufferFactor = Math.min(
+    100,
+    Math.round(Number(dash.resilience?.factors?.emergencyBuffer) || 0) + Math.min(4, scoreBump),
+  )
+  const savingsFactor = Math.min(
+    100,
+    Math.round(Number(dash.resilience?.factors?.savingsBehaviour) || 0) + (projected.streakIncreased ? 2 : 1),
+  )
+
+  const incomePatch =
+    projected.next.surplus != null
+      ? { surplus: projected.next.surplus }
+      : undefined
+
+  localStorage.setItem(
+    POCKET_KEY,
+    JSON.stringify({
+      savings: {
+        balance: projected.next.balance,
+        emergencyCurrent: projected.next.emergencyCurrent,
+        emergencyProgress: projected.next.emergencyProgress,
+        monthlySaved: projected.next.monthlySaved,
+        streak: projected.next.streak,
+        suggested: projected.next.suggested,
+        activity: projected.next.activity,
+      },
+      ...(incomePatch ? { income: incomePatch } : {}),
+      resilience: {
+        previousScore: prevScore,
+        score: nextScore,
+        change: nextScore - prevScore,
+        reasonKey: 'scoreReasonPocket',
+        reasonVars: {
+          amount: `₹${projected.amount.toLocaleString('en-IN')}`,
+        },
+        explanation: '',
+        factors: {
+          emergencyBuffer: bufferFactor,
+          savingsBehaviour: savingsFactor,
+        },
+      },
+    }),
+  )
+
+  const goals = loadList(GOAL_KEY, dash.goals || [])
+  if (Array.isArray(goals) && goals.length) {
+    persistGoals(
+      goals.map((g) =>
+        g.id === 'emergency' ? { ...g, current: projected.next.balance } : g,
+      ),
+    )
+  }
+
+  return getMockDashboard()
+}
+
 export function clone(value) {
   return JSON.parse(JSON.stringify(value))
 }
@@ -327,11 +439,13 @@ export function getMockDashboard() {
 
 export function applyMockTransaction() {
   localStorage.setItem(DEMO_KEY, 'after')
+  localStorage.removeItem(POCKET_KEY)
   return attachLedger(applyStoredProfile(clone(dashboardAfter)))
 }
 
 export function resetMockDashboard() {
   localStorage.setItem(DEMO_KEY, 'before')
+  localStorage.removeItem(POCKET_KEY)
   return attachLedger(applyStoredProfile(clone(dashboardBefore)))
 }
 
