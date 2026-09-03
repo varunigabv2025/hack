@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion'
 import { useApp } from '../context/AppContext'
+import { useLang } from '../hooks/useLang'
 import AppLayout from '../components/AppLayout'
 import NudgeCard from '../components/NudgeCard'
+import NextActionCard from '../components/NextActionCard'
 import { useMoney } from '../hooks/useMoney'
 import { TrendingUp, BarChart3, Target, Shield } from 'lucide-react'
 
@@ -25,7 +27,7 @@ function StatCard({ icon: Icon, label, value, color, delay }) {
   )
 }
 
-function AnimatedBarChart({ data }) {
+function AnimatedBarChart({ data, title }) {
   const max = Math.max(...data.map((d) => d.value), 1)
   return (
     <div className="card relative overflow-hidden">
@@ -33,13 +35,13 @@ function AnimatedBarChart({ data }) {
         className="pointer-events-none absolute inset-0 opacity-[0.08]"
         style={{
           backgroundImage:
-            'linear-gradient(#6B2D5B 1px, transparent 1px), linear-gradient(90deg, #6B2D5B 1px, transparent 1px)',
+            'linear-gradient(#6b2148 1px, transparent 1px), linear-gradient(90deg, #6b2148 1px, transparent 1px)',
           backgroundSize: '24px 24px',
         }}
         aria-hidden="true"
       />
       <p className="relative mb-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-        Weekly Income Trend
+        {title}
       </p>
       <div className="relative flex items-end justify-center gap-4 px-2" style={{ height: 180 }}>
         {data.map((d, i) => {
@@ -61,7 +63,7 @@ function AnimatedBarChart({ data }) {
   )
 }
 
-function DonutChart({ segments, delay = 0 }) {
+function DonutChart({ segments, title, delay = 0 }) {
   const total = segments.reduce((s, seg) => s + seg.value, 0)
   let cumulative = 0
   const r = 60
@@ -74,7 +76,7 @@ function DonutChart({ segments, delay = 0 }) {
       transition={{ delay, duration: 0.8 }}
       className="card"
     >
-      <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Score Breakdown</p>
+      <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{title}</p>
       <div className="flex items-center gap-6">
         <svg width="150" height="150" viewBox="0 0 150 150" className="shrink-0">
           {segments.map((seg, i) => {
@@ -116,6 +118,7 @@ function DonutChart({ segments, delay = 0 }) {
 export default function Insights() {
   const { data } = useApp()
   const { formatMoney } = useMoney()
+  const { t } = useLang()
   const income = data?.income || {}
   const resilience = data?.resilience || {}
   const savings = data?.savings || {}
@@ -128,10 +131,10 @@ export default function Insights() {
       })))
 
   const donutSegments = [
-    { label: 'Stability', value: resilience.factors?.incomeStability || 0, color: '#6B2D5B' },
-    { label: 'Trend', value: resilience.factors?.incomeTrend || 0, color: '#8B4B78' },
-    { label: 'Savings', value: resilience.factors?.savingsBehaviour || 0, color: '#4A1A3D' },
-    { label: 'Buffer', value: resilience.factors?.emergencyBuffer || 0, color: '#A56B96' },
+    { label: t('stability'), value: resilience.factors?.incomeStability || 0, color: '#6b2148' },
+    { label: t('trend'), value: resilience.factors?.incomeTrend || 0, color: '#8a2f5c' },
+    { label: t('savings'), value: resilience.factors?.savingsBehaviour || 0, color: '#3f0f2a' },
+    { label: t('buffer'), value: resilience.factors?.emergencyBuffer || 0, color: '#A56B96' },
   ]
 
   return (
@@ -146,20 +149,22 @@ export default function Insights() {
           animate={{ opacity: 1, y: 0 }}
           className="text-2xl font-bold text-burgundy"
         >
-          Financial Insights
+          {t('financialInsights')}
         </motion.h2>
-        <p className="text-sm text-muted">AI-powered analysis of your financial resilience patterns.</p>
+        <p className="text-sm text-muted">{t('insightsSubtitle')}</p>
+
+        {data ? <NextActionCard dashboard={data} /> : null}
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard icon={TrendingUp} label="Today's Income" value={formatMoney(income.today)} color="#6B2D5B" delay={0.1} />
-          <StatCard icon={BarChart3} label="Baseline" value={formatMoney(income.baseline)} color="#8B4B78" delay={0.2} />
-          <StatCard icon={Target} label="Score" value={`${resilience.score || 0}/100`} color="#4A1A3D" delay={0.3} />
-          <StatCard icon={Shield} label="Buffer" value={`${savings.emergencyProgress || 0}%`} color="#A56B96" delay={0.4} />
+          <StatCard icon={TrendingUp} label={t('todayIncome')} value={formatMoney(income.today)} color="#6b2148" delay={0.1} />
+          <StatCard icon={BarChart3} label={t('baseline')} value={formatMoney(income.baseline)} color="#8a2f5c" delay={0.2} />
+          <StatCard icon={Target} label={t('score')} value={`${resilience.score || 0}/100`} color="#3f0f2a" delay={0.3} />
+          <StatCard icon={Shield} label={t('buffer')} value={`${savings.emergencyProgress || 0}%`} color="#A56B96" delay={0.4} />
         </div>
 
         <div className="grid gap-4 xl:grid-cols-2">
-          <AnimatedBarChart data={weeklyData} />
-          <DonutChart segments={donutSegments} delay={0.4} />
+          <AnimatedBarChart data={weeklyData} title={t('weeklyIncomeTrend')} />
+          <DonutChart segments={donutSegments} title={t('scoreBreakdown')} delay={0.4} />
         </div>
 
         <NudgeCard nudge={data?.nudge} />

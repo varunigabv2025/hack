@@ -6,6 +6,7 @@ import Skeleton from '../components/Skeleton'
 import ErrorState from '../components/ErrorState'
 import { useApp } from '../context/AppContext'
 import { useMoney } from '../hooks/useMoney'
+import { useLang } from '../hooks/useLang'
 
 const CATEGORIES = [
   'Food', 'Transport', 'Housing', 'Healthcare', 'Education',
@@ -15,6 +16,7 @@ const CATEGORIES = [
 export default function Expenses() {
   const { data, status, refresh, addExpense } = useApp()
   const { formatMoney } = useMoney()
+  const { t } = useLang()
   const [amount, setAmount] = useState('200')
   const [category, setCategory] = useState('Food')
   const [essential, setEssential] = useState(true)
@@ -45,25 +47,25 @@ export default function Expenses() {
   return (
     <AppLayout>
       {status === 'loading' ? <Skeleton /> : null}
-      {status === 'error' ? <ErrorState message="Could not load expenses." onRetry={refresh} /> : null}
+      {status === 'error' ? <ErrorState message={t('errorLoadExpenses')} onRetry={refresh} /> : null}
       {status === 'ready' && data ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto max-w-3xl space-y-4">
           <div>
             <p className="page-kicker">Member 1 backend</p>
             <h2 className="mt-1 flex items-center gap-2.5 text-[1.85rem] font-bold text-burgundy">
-              <Receipt className="h-8 w-8" /> Expenses
+              <Receipt className="h-8 w-8" /> {t('expensesTitle')}
             </h2>
             <p className="mt-2 text-[13px] text-muted">
-              Track spend by category. Totals are sums of what you logged — no AI estimates.
+              {t('expensesIntro')}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {[
-              { label: 'Total', value: formatMoney(summary.total_expenses || 0) },
-              { label: 'Essential', value: formatMoney(summary.essential_expenses || 0) },
-              { label: 'Non-essential', value: formatMoney(summary.non_essential_expenses || 0) },
-              { label: 'Count', value: summary.expense_count || 0 },
+              { label: t('total'), value: formatMoney(summary.total_expenses || 0) },
+              { label: t('essential'), value: formatMoney(summary.essential_expenses || 0) },
+              { label: t('nonEssential'), value: formatMoney(summary.non_essential_expenses || 0) },
+              { label: t('count'), value: summary.expense_count || 0 },
             ].map((item) => (
               <article key={item.label} className="card-panel !px-4 !py-4">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">{item.label}</p>
@@ -73,7 +75,7 @@ export default function Expenses() {
           </div>
 
           <article className="card-panel">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-muted">Category breakdown</p>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-muted">{t('categoryBreakdown')}</p>
             <ul className="space-y-2">
               {Object.entries(breakdown).map(([cat, row]) => (
                 <li key={cat}>
@@ -93,29 +95,29 @@ export default function Expenses() {
           </article>
 
           <article className="card-panel">
-            <h3 className="mb-3 text-sm font-bold text-ink">Log an expense</h3>
+            <h3 className="mb-3 text-sm font-bold text-ink">{t('logAnExpense')}</h3>
             <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
-              <input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} placeholder="Amount" />
+              <input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} placeholder={t('amount')} />
               <select className="input" value={category} onChange={(e) => setCategory(e.target.value)}>
                 {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
               </select>
-              <input className="input sm:col-span-2" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description (optional)" />
+              <input className="input sm:col-span-2" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('descriptionOptional')} />
               <label className="flex items-center gap-2 text-sm text-ink">
                 <input type="checkbox" checked={essential} onChange={(e) => setEssential(e.target.checked)} />
-                Essential
+                {t('essential')}
               </label>
-              <button type="submit" className="btn-primary">Save expense</button>
+              <button type="submit" className="btn-primary">{t('saveExpense')}</button>
             </form>
           </article>
 
           <article className="card-panel">
             <div className="mb-3 flex flex-wrap gap-1.5">
-              {['All', ...Object.keys(breakdown)].map((c) => (
+              {[t('all'), ...Object.keys(breakdown)].map((c) => (
                 <button
                   key={c}
                   type="button"
-                  onClick={() => setFilter(c)}
-                  className={`cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold ${filter === c ? 'bg-burgundy text-white' : 'bg-beige text-burgundy'}`}
+                  onClick={() => setFilter(c === t('all') ? 'All' : c)}
+                  className={`cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold ${filter === (c === t('all') ? 'All' : c) ? 'bg-burgundy text-white' : 'bg-beige text-burgundy'}`}
                 >
                   {c}
                 </button>
@@ -125,7 +127,7 @@ export default function Expenses() {
               {visible.map((row) => (
                 <li key={row.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="font-semibold text-ink">{row.category}{row.essential ? ' · essential' : ''}</p>
+                    <p className="font-semibold text-ink">{row.category}{row.essential ? ` · ${t('essential').toLowerCase()}` : ''}</p>
                     <p className="text-xs text-muted">{row.date}{row.description ? ` · ${row.description}` : ''}</p>
                   </div>
                   <p className="font-semibold text-burgundy">{formatMoney(row.amount)}</p>

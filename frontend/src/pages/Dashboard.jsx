@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FlaskConical, Landmark, ArrowRight, ShieldAlert, Receipt } from 'lucide-react'
+import { BadgeCheck, FlaskConical, Landmark, ArrowRight, ShieldAlert, Receipt } from 'lucide-react'
 import { useMoney } from '../hooks/useMoney'
+import { useLang } from '../hooks/useLang'
 import { useApp } from '../context/AppContext'
 import AppLayout from '../components/AppLayout'
 import Skeleton from '../components/Skeleton'
@@ -10,21 +11,29 @@ import IncomeMetric from '../components/IncomeMetric'
 import SavingsPocket from '../components/SavingsPocket'
 import ResilienceScore from '../components/ResilienceScore'
 import TransactionTable from '../components/TransactionTable'
-import CurrencyNetwork from '../components/CurrencyNetwork'
+import NextActionCard from '../components/NextActionCard'
+import EventSignalCard from '../components/EventSignalCard'
+import SpokenNudgeLine from '../components/SpokenNudgeLine'
 import { analyseSchemes } from '../lib/schemeAnalysis'
+import { getEventSignals } from '../lib/eventSignals'
 
 export default function Dashboard() {
   const { data, status, refresh } = useApp()
   const { formatMoney, formatSignedMoney } = useMoney()
+  const { lang, t } = useLang()
   const income = data?.income || {}
   const hasToday = income.today != null
   const schemeSummary = data ? analyseSchemes(data).summary : null
+  const loanLevel = data?.loanRisk?.level || 'low'
+  const showEvent = data
+    ? getEventSignals(data).some((s) => s.severity === 'high')
+    : false
 
   return (
     <AppLayout>
       {status === 'loading' ? <Skeleton /> : null}
       {status === 'error' ? (
-        <ErrorState message="Could not load your dashboard." onRetry={refresh} />
+        <ErrorState message={t('errorLoadDashboard')} onRetry={refresh} />
       ) : null}
       {status === 'ready' && data ? (
         <motion.div
@@ -32,56 +41,58 @@ export default function Dashboard() {
           animate={{ opacity: 1 }}
           className="space-y-3"
         >
+          <SpokenNudgeLine dashboard={data} lang={lang} />
+          <NextActionCard dashboard={data} compact />
+          {showEvent ? <EventSignalCard dashboard={data} /> : null}
+
           <section className="grid gap-3 md:grid-cols-3">
             <IncomeMetric
-              label="Today's Income"
+              label={t('todayIncome')}
               value={hasToday ? formatMoney(income.today) : '—'}
-              hint={hasToday ? `${formatSignedMoney(income.surplus)} above your usual` : 'No pay logged today'}
+              hint={
+                hasToday
+                  ? t('hintAboveUsual', { amount: formatSignedMoney(income.surplus) })
+                  : t('noPayLoggedToday')
+              }
               tone="burgundy"
               sparkline={income.sparkline}
               delay={0}
               showHintArrow
             />
             <IncomeMetric
-              label="Usual Income (Baseline)"
+              label={t('baseline')}
               value={formatMoney(income.baseline)}
-              hint="Last 30-day average"
+              hint={t('last30DayAverage')}
               tone="gold"
               sparkline={income.sparkline}
               delay={0.1}
             />
             <IncomeMetric
-              label="Surplus Today"
+              label={t('surplus')}
               value={hasToday ? formatMoney(income.surplus) : '—'}
-              hint="Opportunity to build resilience"
+              hint={t('opportunityBuildResilience')}
               tone="emerald"
               sparkline={income.sparkline}
               delay={0.2}
             />
           </section>
 
-          <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <section className="grid grid-cols-2 gap-2 md:grid-cols-4">
             {[
+              { label: t('volatility'), value: income.volatilityLabel || '—' },
               {
-                label: 'Volatility',
-                value: income.volatilityLabel || '—',
-              },
-              {
-                label: 'Consistency',
+                label: t('consistency'),
                 value: income.consistency != null ? `${Math.round(income.consistency * 100)}%` : '—',
               },
               {
-                label: '7-day outlook',
+                label: t('sevenDayOutlook'),
                 value: income.prediction?.next7Days != null ? formatMoney(income.prediction.next7Days) : '—',
               },
-              {
-                label: 'Loan risk',
-                value: data.loanRisk?.level || 'low',
-              },
+              { label: t('loanRisk'), value: t(loanLevel) || loanLevel },
             ].map((item) => (
-              <div key={item.label} className="rounded-[1.25rem] border border-line/80 bg-white/75 px-4 py-3">
-                <p className="text-lg font-bold capitalize tracking-tight text-burgundy">{item.value}</p>
-                <p className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.12em] text-muted">{item.label}</p>
+              <div key={item.label} className="rounded-2xl border border-line/70 bg-white/70 px-3 py-2.5">
+                <p className="text-base font-bold capitalize tracking-tight text-burgundy">{item.value}</p>
+                <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted">{item.label}</p>
               </div>
             ))}
           </section>
@@ -89,75 +100,60 @@ export default function Dashboard() {
           <section className="flex flex-col gap-3 xl:flex-row xl:items-start">
             <div className="flex h-fit w-full min-w-0 flex-none flex-col gap-3 xl:w-1/2">
               <SavingsPocket savings={data.savings} data={data} />
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Link to="/loans" className="card !p-3.5 flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-burgundy-soft text-burgundy">
-                      <ShieldAlert className="h-4 w-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-ink">Loan stacking</p>
-                      <p className="truncate text-xs capitalize text-muted">{data.loanRisk?.level || 'low'} risk · {data.loanRisk?.activeLoans || 0} active</p>
-                    </div>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-burgundy" />
+              <div className="grid grid-cols-2 gap-2">
+                <Link to="/loans" className="rounded-2xl border border-line/70 bg-white/75 px-3 py-2.5 transition hover:border-burgundy/30">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                    <ShieldAlert className="h-3.5 w-3.5 text-burgundy" /> {t('loans')}
+                  </p>
+                  <p className="mt-0.5 text-[11px] capitalize text-muted">
+                    {t('activeLoansCount', {
+                      level: t(loanLevel) || loanLevel,
+                      count: data.loanRisk?.activeLoans || 0,
+                    })}
+                  </p>
                 </Link>
-                <Link to="/expenses" className="card !p-3.5 flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-soft text-gold">
-                      <Receipt className="h-4 w-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-ink">Expenses</p>
-                      <p className="truncate text-xs text-muted">{data.expenseSummary?.expense_count || 0} logged</p>
-                    </div>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-burgundy" />
+                <Link to="/expenses" className="rounded-2xl border border-line/70 bg-white/75 px-3 py-2.5 transition hover:border-burgundy/30">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                    <Receipt className="h-3.5 w-3.5 text-burgundy" /> {t('expenses')}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted">
+                    {t('expensesLogged', { count: data.expenseSummary?.expense_count || 0 })}
+                  </p>
                 </Link>
-                {schemeSummary && (
-                  <div className="card !p-3.5 flex items-center justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-burgundy-soft text-burgundy">
-                        <Landmark className="h-4 w-4" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-ink">Scheme Studio</p>
-                        <p className="truncate text-xs text-muted">
-                          {schemeSummary.high} high-fit · {schemeSummary.medium} medium-fit
-                        </p>
-                      </div>
-                    </div>
-                    <Link
-                      to="/schemes"
-                      className="btn-primary inline-flex h-9 items-center gap-1.5 whitespace-nowrap px-3 text-xs"
-                    >
-                      Open <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
-                )}
-                <div className="card !p-3.5 flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-soft text-gold">
-                      <FlaskConical className="h-4 w-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-ink">What-If Lab</p>
-                      <p className="truncate text-xs text-muted">Surplus split scenarios</p>
-                    </div>
-                  </div>
-                  <Link
-                    to="/lab"
-                    className="btn-gold inline-flex h-9 items-center gap-1.5 whitespace-nowrap px-3 text-xs"
-                  >
-                    Open <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
+                <Link to="/schemes" className="rounded-2xl border border-line/70 bg-white/75 px-3 py-2.5 transition hover:border-burgundy/30">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                    <Landmark className="h-3.5 w-3.5 text-burgundy" /> {t('schemes')}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted">
+                    {schemeSummary
+                      ? t('schemesHighFit', { count: schemeSummary.high })
+                      : t('openMatcher')}
+                  </p>
+                </Link>
+                <Link to="/lab" className="rounded-2xl border border-line/70 bg-white/75 px-3 py-2.5 transition hover:border-burgundy/30">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                    <FlaskConical className="h-3.5 w-3.5 text-burgundy" /> {t('whatIf')}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted">{t('surplusScenarios')}</p>
+                </Link>
               </div>
               <TransactionTable transactions={data.transactions} limit={4} />
             </div>
             <div className="flex h-fit w-full min-w-0 flex-none flex-col gap-3 xl:w-1/2">
               <ResilienceScore resilience={data.resilience} />
-              <CurrencyNetwork />
+              <Link
+                to="/passport"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-line/70 bg-white/75 px-3.5 py-3 transition hover:border-gold/40"
+              >
+                <span className="flex items-center gap-2.5">
+                  <BadgeCheck className="h-4 w-4 text-burgundy" />
+                  <span>
+                    <span className="block text-sm font-semibold text-burgundy">{t('passportTitle')}</span>
+                    <span className="block text-[11px] text-muted">{t('passportSubtitle')}</span>
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 text-burgundy" />
+              </Link>
             </div>
           </section>
         </motion.div>
