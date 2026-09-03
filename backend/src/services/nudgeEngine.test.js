@@ -34,3 +34,4 @@ test('empty facts still returns a safe prompt to log income', () => {
   assert.equal(nudge.triggered, true)
   assert.match(nudge.message, /Log today's income|income/i)
 })
+

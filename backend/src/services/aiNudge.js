@@ -52,3 +52,4 @@ export async function generateAiNudge(facts = {}) {
     return generateFallbackNudge(facts)
   }
 }
+

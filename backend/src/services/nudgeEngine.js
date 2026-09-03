@@ -96,3 +96,4 @@ export function extractNudgeFacts(dashboard = {}) {
     baseline: income.baseline,
   }
 }
+

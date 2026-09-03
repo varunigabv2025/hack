@@ -59,3 +59,4 @@ export async function generateAiChatReply({ question, dashboard = {}, facts } = 
     return { reply: fallback, source: 'fallback' }
   }
 }
+

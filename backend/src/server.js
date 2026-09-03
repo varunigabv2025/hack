@@ -1,46 +1,71 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
-import dotenv from 'dotenv'
-import cors from 'cors'
-import express from 'express'
-import nudgeRouter from './routes/nudge.js'
-import demoRouter from './routes/demo.js'
-import schemesRouter from './routes/schemes.js'
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import app from './app.js';
 
-dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), '../.env') })
+// ES Module __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const app = express()
-const PORT = Number(process.env.PORT) || 5000
+// Load environment variables
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
-app.use(cors())
-app.use(express.json())
+const PORT = Number(process.env.PORT) || 5000;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/resilience-engine';
 
-app.get('/', (_req, res) => {
-  res.json({
-    service: 'Resilience Engine — Member 4 (AI Nudge, Schemes & Demo)',
-    endpoints: [
-      'POST /nudge',
-      'POST /nudge/chat',
-      'GET /nudge/health',
-      'POST /schemes/analyse',
-      'GET /schemes/health',
-      'GET /demo/profiles',
-      'GET /demo/profiles/:id',
-      'GET /demo/preview/:id',
-    ],
-  })
-})
+// MongoDB connection function
+const connectDB = async () => {
+  try {
+    await mongoose.connect(MONGODB_URI);
+    console.log('✅ MongoDB connected successfully');
+    console.log(`📊 Database: ${mongoose.connection.name}`);
+    return true;
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error.message);
+    return false;
+  }
+};
 
-app.use('/nudge', nudgeRouter)
-app.use('/schemes', schemesRouter)
-app.use('/demo', demoRouter)
+// Start server
+const startServer = async () => {
+  // Attempt MongoDB connection (but don't block server start if it fails)
+  const dbConnected = await connectDB();
+  
+  if (!dbConnected) {
+    console.warn('⚠️  Server starting without MongoDB connection');
+    console.warn('⚠️  Member 4 AI Nudge and demo features will still work');
+  }
 
-app.use((err, _req, res, _next) => {
-  console.error(err)
-  res.status(500).json({ error: err.message || 'Server error' })
-})
+  // Start Express server
+  app.listen(PORT, () => {
+    console.log(`🚀 Resilience Engine Backend running on port ${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`🤖 Gemini AI: ${process.env.GEMINI_API_KEY ? 'configured' : 'off (fallback only)'}`);
+    console.log(`\nEndpoints:`);
+    console.log(`  - Member 1: http://localhost:${PORT}/api/*`);
+    console.log(`  - Member 4: http://localhost:${PORT}/nudge`);
+    console.log(`  - Member 4: http://localhost:${PORT}/demo/profiles`);
+    console.log(`  - Member 4: http://localhost:${PORT}/schemes/analyse`);
+  });
+};
 
-app.listen(PORT, () => {
-  console.log(`Member 4 nudge service on http://localhost:${PORT}`)
-  console.log(`Gemini: ${process.env.GEMINI_API_KEY ? 'configured' : 'off (fallback only)'}`)
-})
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('🛑 SIGTERM received, closing server...');
+  await mongoose.connection.close();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('\n🛑 SIGINT received, closing server...');
+  await mongoose.connection.close();
+  process.exit(0);
+});
+
+// Start the server
+startServer().catch((error) => {
+  console.error('❌ Failed to start server:', error.message);
+  process.exit(1);
+});
