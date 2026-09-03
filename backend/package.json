@@ -1,0 +1,20 @@
+{
+  "name": "resilience-engine-member4",
+  "version": "1.0.0",
+  "description": "Member 4 — AI Nudge, demo dataset, and integration helpers",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test:nudge": "node --test src/services/nudgeEngine.test.js"
+  },
+  "keywords": ["resilience-engine", "nudge", "hackathon"],
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "openai": "^7.9.0"
+  }
+}

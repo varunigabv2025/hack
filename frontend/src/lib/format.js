@@ -1,28 +1,34 @@
-const inr = new Intl.NumberFormat('en-IN', {
-  style: 'currency',
-  currency: 'INR',
-  maximumFractionDigits: 0,
-})
+import { getCurrency, convertFromInr } from '../data/currencies'
 
-export function formatInr(value) {
+function getFormatter(code) {
+  const c = getCurrency(code)
+  const locale = code === 'INR' ? 'en-IN' : 'en-US'
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: code,
+    maximumFractionDigits: code === 'INR' || code === 'JPY' || code === 'KRW' ? 0 : 2,
+  })
+}
+
+export function formatMoney(value, currencyCode = 'INR') {
   if (value == null || Number.isNaN(Number(value))) return '—'
-  return inr.format(Number(value))
+  const converted = convertFromInr(Number(value), currencyCode)
+  return getFormatter(currencyCode).format(converted)
+}
+
+export function formatSignedMoney(value, currencyCode = 'INR') {
+  if (value == null || Number.isNaN(Number(value))) return '—'
+  const n = Number(value)
+  const formatted = formatMoney(Math.abs(n), currencyCode)
+  if (n > 0) return `+${formatted}`
+  if (n < 0) return `−${formatted}`
+  return formatted
 }
 
 export function formatSigned(value) {
   if (value == null || Number.isNaN(Number(value))) return '—'
   const n = Number(value)
-  const prefix = n > 0 ? '+' : ''
-  return `${prefix}${n}`
-}
-
-export function formatSignedInr(value) {
-  if (value == null || Number.isNaN(Number(value))) return '—'
-  const n = Number(value)
-  const formatted = formatInr(Math.abs(n))
-  if (n > 0) return `+${formatted}`
-  if (n < 0) return `−${formatted}`
-  return formatted
+  return `${n > 0 ? '+' : ''}${n}`
 }
 
 export function formatDay(iso) {
@@ -31,20 +37,11 @@ export function formatDay(iso) {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
 }
 
-export function formatLongDate(date = new Date()) {
-  return date.toLocaleDateString('en-IN', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
 export function greetingForNow(date = new Date()) {
   const hour = date.getHours()
-  if (hour < 12) return 'morning'
-  if (hour < 17) return 'afternoon'
-  return 'evening'
+  if (hour < 12) return 'Good morning'
+  if (hour < 17) return 'Good afternoon'
+  return 'Good evening'
 }
 
 export function initials(name = '') {

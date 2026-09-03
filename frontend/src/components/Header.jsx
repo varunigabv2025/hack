@@ -1,28 +1,62 @@
-import { formatLongDate, greetingForNow, initials } from '../lib/format'
-import { strings } from '../i18n/strings'
+import { useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Bell, Menu } from 'lucide-react'
+import { greetingForNow, initials } from '../lib/format'
 import { useApp } from '../context/AppContext'
+import CurrencySelector from './CurrencySelector'
 
-export default function Header({ name }) {
-  const { language } = useApp()
-  const copy = strings[language] || strings.en
-  const greeting = copy.header[greetingForNow()]
-  const dateLabel = formatLongDate()
+export default function Header() {
+  const { data, setSidebarOpen } = useApp()
+  const { pathname } = useLocation()
+  const name = data?.user?.name || 'there'
+  const showGreeting = pathname === '/'
 
   return (
-    <header className="mb-5 flex items-center justify-between gap-3">
-      <div className="min-w-0">
-        <p className="text-sm text-muted">{dateLabel}</p>
-        <h1 className="mt-1 truncate text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-          {greeting}
-        </h1>
-        {name && <p className="mt-1 text-sm text-muted">{name}</p>}
+    <motion.header
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className={
+        showGreeting
+          ? 'mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'
+          : 'mb-3 flex items-center justify-between gap-2 sm:justify-end'
+      }
+    >
+      <div className="flex min-w-0 items-center gap-2.5">
+        <button
+          type="button"
+          className="cursor-pointer rounded-lg border border-line bg-card/90 p-1.5 text-ink shadow-sm lg:hidden"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open menu"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
+        {showGreeting ? (
+          <div className="min-w-0">
+            <p className="page-kicker leading-none">Personal resilience</p>
+            <h1 className="mt-1 truncate text-base font-semibold tracking-tight text-burgundy sm:text-lg">
+              {greetingForNow()}, {name}
+            </h1>
+          </div>
+        ) : null}
       </div>
-      <div
-        aria-hidden="true"
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-card-2 text-sm font-semibold text-engine"
-      >
-        {initials(name)}
+
+      <div className="flex shrink-0 items-center gap-2">
+        <CurrencySelector />
+        <button
+          type="button"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-line bg-card text-muted transition hover:border-burgundy/25 hover:text-burgundy"
+          aria-label="Notifications"
+        >
+          <Bell className="h-3.5 w-3.5" />
+        </button>
+        <div
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-burgundy to-burgundy-deep text-[11px] font-semibold text-white shadow-sm shadow-burgundy/20"
+          aria-hidden="true"
+        >
+          {initials(name)}
+        </div>
       </div>
-    </header>
+    </motion.header>
   )
 }

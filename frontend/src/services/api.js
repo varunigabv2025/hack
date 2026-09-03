@@ -1,13 +1,17 @@
 import { applyMockTransaction, getMockDashboard, resetMockDashboard } from '../data/mockData'
+import { factsFromDashboard, generateFallbackNudge } from '../lib/nudgeFallback'
+import { analyseSchemes } from '../lib/schemeAnalysis'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
+// Empty = same-origin (Vite proxies /nudge and /schemes to Member 4 backend)
+const NUDGE_URL = import.meta.env.VITE_NUDGE_URL ?? API_URL ?? ''
 
 function delay(ms = 400) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function request(path, options = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
+async function request(base, path, options = {}) {
+  const res = await fetch(`${base}${path}`, {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options,
   })
@@ -28,7 +32,7 @@ export async function getDashboard() {
     await delay()
     return getMockDashboard()
   }
-  return request('/dashboard')
+  return request(API_URL, '/dashboard')
 }
 
 export async function addTransaction(transaction) {
@@ -36,7 +40,7 @@ export async function addTransaction(transaction) {
     await delay(520)
     return applyMockTransaction(transaction)
   }
-  return request('/transactions', {
+  return request(API_URL, '/transactions', {
     method: 'POST',
     body: JSON.stringify(transaction),
   })
@@ -47,11 +51,84 @@ export async function getTransactions() {
     await delay(200)
     return getMockDashboard().transactions || []
   }
-  return request('/transactions')
+  return request(API_URL, '/transactions')
 }
 
 export async function resetDemo() {
   if (API_URL) return getDashboard()
   await delay(200)
   return resetMockDashboard()
+}
+
+/** Member 4 — fetch AI/fallback nudge from facts or dashboard snapshot. */
+export async function fetchNudge(dashboardOrFacts = {}) {
+  const facts =
+    dashboardOrFacts.income || dashboardOrFacts.resilience
+      ? factsFromDashboard(dashboardOrFacts)
+      : dashboardOrFacts
+
+  try {
+    const payload = await request(NUDGE_URL, '/nudge', {
+      method: 'POST',
+      body: JSON.stringify({ facts }),
+    })
+    return {
+      triggered: payload.nudge?.triggered ?? true,
+      title: payload.nudge?.title,
+      message: payload.nudge?.message,
+      source: payload.meta?.source || 'api',
+    }
+  } catch {
+    return generateFallbackNudge(facts)
+  }
+}
+
+/** Gemini coach reply for the floating chat. */
+export async function fetchCoachReply(question, dashboard = {}) {
+  try {
+    const payload = await request(NUDGE_URL, '/nudge/chat', {
+      method: 'POST',
+      body: JSON.stringify({ question, dashboard }),
+    })
+    if (payload?.reply) return payload.reply
+  } catch {
+    /* local fallback below */
+  }
+  return generateFallbackNudge(factsFromDashboard(dashboard)).message
+}
+
+/** AI + ranked government scheme analysis for the user profile. */
+export async function fetchSchemeAnalysis(dashboard = {}) {
+  const local = analyseSchemes(dashboard)
+
+  try {
+    const payload = await request(NUDGE_URL, '/schemes/analyse', {
+      method: 'POST',
+      body: JSON.stringify(dashboard),
+    })
+
+    // Keep rich frontend catalog fields; merge AI insight + server ranks by id
+    const serverRanked = payload.ranked || []
+    const merged = local.ranked
+      .map((scheme) => {
+        const hit = serverRanked.find((s) => s.id === scheme.id)
+        return hit
+          ? { ...scheme, match: hit.match, priority: hit.priority, reason: hit.reason || scheme.reason }
+          : scheme
+      })
+      .sort((a, b) => b.match - a.match)
+
+    return {
+      ctx: payload.ctx || local.ctx,
+      ranked: merged,
+      insight: payload.insight || local.insight,
+      summary: {
+        ...local.summary,
+        ...(payload.summary || {}),
+        headline: local.summary.headline,
+      },
+    }
+  } catch {
+    return local
+  }
 }

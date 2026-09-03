@@ -1,12 +1,10 @@
 # Resilience Engine — Frontend (Member 3)
 
-Mobile-first React dashboard for gig-worker income, savings, resilience score, and AI nudges.
-
-The UI **only displays** backend (or mock) numbers. It does not calculate scores, baselines, or savings.
+Premium light fintech dashboard (Ivory + Burgundy + Gold).
 
 ## Stack
 
-React + Vite, Tailwind CSS, Recharts, React Router.
+React + Vite, Tailwind CSS, React Router, Lucide icons.
 
 ## Run
 
@@ -16,13 +14,20 @@ npm install
 npm run dev
 ```
 
-Opens at http://localhost:5173
+Open http://localhost:5173
 
-Until Express is live, leave `VITE_API_URL` empty. Mock data matches [`API_CONTRACT.md`](../API_CONTRACT.md).
+Mock data is on by default. Set `VITE_API_URL` in `.env` when Express is ready.
 
 ## Pages
 
-- `/` Dashboard
+- `/` Dashboard — income → surplus → save → score → nudge story
 - `/savings` Savings pocket
-- `/score` Resilience score
-- `/activity` Transactions + demo `POST /transactions`
+- `/score` Resilience score detail
+- `/transactions` Log pay + activity table
+- `/insights` `/goals` `/network` `/settings`
+
+## Design
+
+- Light ivory canvas, white cards, burgundy primary, gold accents
+- Currency identity chips (not an FX converter — amounts stay INR from backend)
+- Desktop sidebar + mobile drawer

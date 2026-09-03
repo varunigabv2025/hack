@@ -9,6 +9,9 @@ export default defineConfig({
     proxy: {
       '/dashboard': { target: 'http://localhost:5000', changeOrigin: true },
       '/transactions': { target: 'http://localhost:5000', changeOrigin: true },
+      '/nudge': { target: 'http://localhost:5000', changeOrigin: true },
+      '/schemes': { target: 'http://localhost:5000', changeOrigin: true },
+      '/demo': { target: 'http://localhost:5000', changeOrigin: true },
     },
   },
 })
