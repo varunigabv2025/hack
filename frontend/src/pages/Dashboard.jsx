@@ -99,7 +99,7 @@ export default function Dashboard() {
 
           <section className="flex flex-col gap-3 xl:flex-row xl:items-start">
             <div className="flex h-fit w-full min-w-0 flex-none flex-col gap-3 xl:w-1/2">
-              <SavingsPocket savings={data.savings} data={data} />
+              <SavingsPocket savings={data.savings} data={data} allowDeposit={false} />
               <div className="grid grid-cols-2 gap-2">
                 <Link to="/loans" className="rounded-2xl border border-line/70 bg-white/75 px-3 py-2.5 transition hover:border-burgundy/30">
                   <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">

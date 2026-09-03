@@ -8,7 +8,7 @@ import { generateAiBrief } from '../lib/aiBrief'
 import { useSavingsDepositAnimation } from '../hooks/useSavingsDepositAnimation'
 import SavingsDepositCoins from './SavingsDepositCoins'
 
-export default function SavingsPocket({ savings, data }) {
+export default function SavingsPocket({ savings, data, allowDeposit = true }) {
   const { formatMoney } = useMoney()
   const { t } = useLang()
   const { depositToPocket } = useApp()
@@ -46,10 +46,12 @@ export default function SavingsPocket({ savings, data }) {
   })
 
   const progress = Math.min(100, Math.max(0, liveProgress))
-  const showDepositForm = maxAvailable > 0 || isDepositing || confirmation
+  const showDepositForm =
+    allowDeposit && (maxAvailable > 0 || isDepositing || confirmation)
   const ctaLabel = isDepositing
     ? t('addingToPocket')
     : t('saveToPocket', { amount: formatMoney(amount || 0) })
+  const displayAvailable = allowDeposit ? available : Number(savings?.suggested) || 0
 
   return (
     <motion.div
@@ -58,7 +60,9 @@ export default function SavingsPocket({ savings, data }) {
       transition={{ duration: 0.55, delay: 0.15 }}
       className="h-fit w-full flex-none"
     >
-      <SavingsDepositCoins coins={coins} reducedMotion={reducedMotion} />
+      {allowDeposit ? (
+        <SavingsDepositCoins coins={coins} reducedMotion={reducedMotion} />
+      ) : null}
 
       <section className="card savings-pocket-card relative !p-3">
         <div className="relative flex items-center gap-2">
@@ -77,7 +81,7 @@ export default function SavingsPocket({ savings, data }) {
               {t('safeToSaveToday')}
             </p>
             <p className="mt-1 text-3xl font-extrabold tracking-tight text-futuristic tabular-nums">
-              {formatMoney(available)}
+              {formatMoney(displayAvailable)}
             </p>
           </div>
 
@@ -183,11 +187,13 @@ export default function SavingsPocket({ savings, data }) {
           </div>
         ) : null}
 
-        <div className="sr-only" aria-live="polite" aria-atomic="true">
-          {statusMessage}
-        </div>
+        {allowDeposit ? (
+          <div className="sr-only" aria-live="polite" aria-atomic="true">
+            {statusMessage}
+          </div>
+        ) : null}
 
-        {confirmation ? (
+        {allowDeposit && confirmation ? (
           <motion.p
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
@@ -199,7 +205,7 @@ export default function SavingsPocket({ savings, data }) {
           </motion.p>
         ) : null}
 
-        {error ? (
+        {allowDeposit && error ? (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
