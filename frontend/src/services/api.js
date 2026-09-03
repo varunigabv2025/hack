@@ -132,3 +132,48 @@ export async function fetchSchemeAnalysis(dashboard = {}) {
     return local
   }
 }
+
+/** Goals API — live Mongo backend or local mock ledger. */
+export async function createGoal(goal) {
+  if (!API_URL) {
+    await delay(280)
+    const { addMockGoal } = await import('../data/mockData')
+    return addMockGoal(goal)
+  }
+  const payload = await request(API_URL, '/goals', {
+    method: 'POST',
+    body: JSON.stringify(goal),
+  })
+  return payload.goal || payload
+}
+
+export async function listGoals(userId) {
+  if (!API_URL) {
+    await delay(200)
+    return getMockDashboard().goals || []
+  }
+  const payload = await request(API_URL, `/goals/${encodeURIComponent(userId)}`)
+  return payload.goals || []
+}
+
+export async function contributeGoal(goalId, amount = 500) {
+  if (!API_URL) {
+    await delay(280)
+    const { contributeMockGoal } = await import('../data/mockData')
+    return contributeMockGoal(goalId, amount)
+  }
+  const payload = await request(API_URL, `/goals/${encodeURIComponent(goalId)}/contribute`, {
+    method: 'POST',
+    body: JSON.stringify({ amount }),
+  })
+  return payload.goal || payload
+}
+
+export async function deleteGoal(goalId) {
+  if (!API_URL) {
+    await delay(200)
+    const { deleteMockGoal } = await import('../data/mockData')
+    return deleteMockGoal(goalId)
+  }
+  return request(API_URL, `/goals/${encodeURIComponent(goalId)}`, { method: 'DELETE' })
+}

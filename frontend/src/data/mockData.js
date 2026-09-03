@@ -15,6 +15,7 @@ export const mockUser = {
 export const mockSettings = {
   notifications: true,
   darkMode: false,
+  lowLiteracy: false,
 }
 
 const weeklyBefore = [
@@ -161,6 +162,7 @@ const DEMO_KEY = 're_demo_applied'
 const PROFILE_KEY = 're_profile'
 const EXPENSE_KEY = 're_expenses'
 const LOAN_KEY = 're_loans'
+const GOAL_KEY = 're_goals'
 
 const seedExpenses = [
   { id: 'exp-1', date: '2026-09-03', amount: 500, category: 'Food', essential: true, description: 'Groceries for the week' },
@@ -224,12 +226,14 @@ function loadList(key, fallback) {
 function attachLedger(dashboard) {
   const expenses = loadList(EXPENSE_KEY, seedExpenses)
   const loans = loadList(LOAN_KEY, [])
+  const goals = loadList(GOAL_KEY, null)
   return {
     ...dashboard,
     expenses,
     expenseSummary: summariseExpenses(expenses),
     loans,
     loanRisk: assessLoanRisk(loans, dashboard.income?.baseline),
+    goals: Array.isArray(goals) ? goals : dashboard.goals,
   }
 }
 
@@ -241,6 +245,10 @@ export function persistLoans(loans) {
   localStorage.setItem(LOAN_KEY, JSON.stringify(loans))
 }
 
+export function persistGoals(goals) {
+  localStorage.setItem(GOAL_KEY, JSON.stringify(goals))
+}
+
 export function addMockExpense(expense) {
   const current = loadList(EXPENSE_KEY, seedExpenses)
   persistExpenses([expense, ...current])
@@ -250,6 +258,45 @@ export function addMockExpense(expense) {
 export function addMockLoan(loan) {
   const current = loadList(LOAN_KEY, [])
   persistLoans([loan, ...current])
+  return getMockDashboard()
+}
+
+export function addMockGoal(goal) {
+  const dash = getMockDashboard()
+  const current = loadList(GOAL_KEY, dash.goals || [])
+  const next = {
+    id: goal.id || `GOAL${Date.now()}`,
+    name: goal.name,
+    target: Number(goal.target) || 0,
+    current: Number(goal.current) || 0,
+    icon: goal.icon || '🎯',
+    status: 'active',
+  }
+  persistGoals([next, ...current])
+  return getMockDashboard()
+}
+
+export function contributeMockGoal(goalId, amount = 500) {
+  const dash = getMockDashboard()
+  const current = loadList(GOAL_KEY, dash.goals || [])
+  const next = current.map((g) => {
+    if (g.id !== goalId) return g
+    const target = Number(g.target) || 0
+    const saved = Math.min(target, (Number(g.current) || 0) + Number(amount))
+    return {
+      ...g,
+      current: saved,
+      status: saved >= target && target > 0 ? 'completed' : g.status || 'active',
+    }
+  })
+  persistGoals(next)
+  return getMockDashboard()
+}
+
+export function deleteMockGoal(goalId) {
+  const dash = getMockDashboard()
+  const current = loadList(GOAL_KEY, dash.goals || [])
+  persistGoals(current.filter((g) => g.id !== goalId))
   return getMockDashboard()
 }
 
@@ -313,11 +360,13 @@ function mapWeekly(payload, sparkline) {
 function mapGoals(payload, balance) {
   if (Array.isArray(payload.goals) && payload.goals.length) {
     return payload.goals.map((g, i) => ({
-      id: g.id || `goal-${i}`,
+      id: g.id || g.goal_id || `goal-${i}`,
       name: g.name,
       target: Number(g.target) || 0,
       current: Number(g.current) || 0,
       icon: g.icon || '🎯',
+      status: g.status || 'active',
+      progress: g.progress,
     }))
   }
   return goalsFromBalance(balance)

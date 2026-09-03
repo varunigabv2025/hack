@@ -13,7 +13,7 @@ export default function QuoteCard() {
       animate={{ opacity: 1, y: 0, rotateX: 0 }}
       transition={{ duration: 0.7, delay: 0.3 }}
       whileHover={{ y: -6, boxShadow: '0 20px 50px rgba(107,45,91,0.1)' }}
-      className="card flex h-full flex-col justify-center bg-gradient-to-br from-white to-burgundy-soft/30"
+      className="card flex h-full flex-col justify-center bg-white"
       style={{ transformStyle: 'preserve-3d' }}
     >
       <motion.div

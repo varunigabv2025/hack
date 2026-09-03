@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { formatDay } from '../lib/format'
 import { useMoney } from '../hooks/useMoney'
+import { useLang } from '../hooks/useLang'
 
 const brandColors = {
   Uber: { bg: '#000', text: '#fff', letter: 'U' },
@@ -10,11 +11,11 @@ const brandColors = {
   Ola: { bg: '#79B93C', text: '#fff', letter: 'O' },
   Rapido: { bg: '#FECF2F', text: '#1a1a1a', letter: 'R' },
   Dunzo: { bg: '#00D290', text: '#fff', letter: 'D' },
-  Cash: { bg: '#6B2D5B', text: '#fff', letter: '₹' },
+  Cash: { bg: '#6b2148', text: '#fff', letter: '₹' },
 }
 
 function SourceBadge({ source }) {
-  const brand = brandColors[source] || { bg: '#6B2D5B', text: '#fff', letter: (source || '?')[0].toUpperCase() }
+  const brand = brandColors[source] || { bg: '#6b2148', text: '#fff', letter: (source || '?')[0].toUpperCase() }
   return (
     <span
       className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold shadow-sm"
@@ -27,29 +28,30 @@ function SourceBadge({ source }) {
 
 export default function TransactionTable({ transactions = [], limit }) {
   const { formatMoney, formatSignedMoney } = useMoney()
+  const { t } = useLang()
   const rows = limit ? transactions.slice(0, limit) : transactions
 
   return (
     <section className="card overflow-hidden p-0">
       <div className="flex items-center justify-between px-5 py-4">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Recent Transactions</h2>
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{t('recentTransactions')}</h2>
         <Link to="/transactions" className="cursor-pointer text-sm font-semibold text-burgundy hover:opacity-80 transition-opacity">
-          View all
+          {t('viewAll')}
         </Link>
       </div>
 
       {!rows.length ? (
-        <p className="px-5 pb-5 text-sm text-muted">No transactions yet. Log today&apos;s pay to start.</p>
+        <p className="px-5 pb-5 text-sm text-muted">{t('emptyTransactions')}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead className="border-y border-line/50 bg-ivory/50 text-[11px] uppercase tracking-wide text-muted">
               <tr>
-                <th className="px-5 py-3 font-semibold">Date</th>
-                <th className="px-5 py-3 font-semibold">Source</th>
-                <th className="px-5 py-3 font-semibold">Amount</th>
-                <th className="px-5 py-3 font-semibold">Vs Baseline</th>
-                <th className="px-5 py-3 font-semibold">Action</th>
+                <th className="px-5 py-3 font-semibold">{t('date')}</th>
+                <th className="px-5 py-3 font-semibold">{t('source')}</th>
+                <th className="px-5 py-3 font-semibold">{t('amount')}</th>
+                <th className="px-5 py-3 font-semibold">{t('vsBaseline')}</th>
+                <th className="px-5 py-3 font-semibold">{t('action')}</th>
               </tr>
             </thead>
             <tbody>
@@ -75,10 +77,10 @@ export default function TransactionTable({ transactions = [], limit }) {
                   <td className="px-5 py-3.5 text-muted">
                     {row.saved > 0 ? (
                       <span className="inline-flex rounded-full bg-emerald-soft px-2 py-0.5 text-xs font-semibold text-emerald">
-                        {formatMoney(row.saved)} saved
+                        {t('amountSaved', { amount: formatMoney(row.saved) })}
                       </span>
                     ) : (
-                      'No sweep'
+                      t('noSweep')
                     )}
                   </td>
                 </motion.tr>

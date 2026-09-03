@@ -2,13 +2,15 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Flame, PiggyBank, Sparkles, Zap } from 'lucide-react'
 import { useMoney } from '../hooks/useMoney'
+import { useLang } from '../hooks/useLang'
 import { generateAiBrief } from '../lib/aiBrief'
 
 export default function SavingsPocket({ savings, data }) {
   const { formatMoney } = useMoney()
+  const { t } = useLang()
   const progress = Math.min(100, Math.max(0, savings?.emergencyProgress || 0))
   const brief = data ? generateAiBrief(data) : null
-  const line = brief?.nextAction || brief?.focus || 'Ask the coach what to do with today’s surplus.'
+  const line = brief?.nextAction || brief?.focus || t('coachSurplusFallback')
 
   return (
     <motion.div
@@ -23,7 +25,7 @@ export default function SavingsPocket({ savings, data }) {
           <PiggyBank className="h-3.5 w-3.5 text-burgundy" />
         </span>
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-          Savings Pocket
+          {t('savingsTitle')}
         </p>
       </div>
 
@@ -31,29 +33,29 @@ export default function SavingsPocket({ savings, data }) {
         <div>
           <p className="flex items-center gap-1 text-xs text-muted">
             <Zap className="h-3 w-3 text-burgundy" aria-hidden="true" />
-            Safe to save today
+            {t('safeToSaveToday')}
           </p>
           <p className="mt-1 text-3xl font-extrabold tracking-tight text-futuristic">
             {formatMoney(savings?.suggested)}
           </p>
         </div>
 
-        <div className="rounded-xl border border-burgundy/10 bg-burgundy-soft/60 px-3 py-2">
-          <p className="text-xs text-muted">Savings streak</p>
-          <p className="mt-1 flex items-center gap-1.5 text-xl font-bold text-burgundy">
-            <Flame className="h-4 w-4 text-burgundy" aria-hidden="true" />
-            {savings?.streak || 0} Days
+        <div className="rounded-xl border border-gold/25 bg-gold-soft px-3 py-2">
+          <p className="text-xs text-muted">{t('savingsStreak')}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-xl font-bold text-gold">
+            <Flame className="h-4 w-4 text-gold" aria-hidden="true" />
+            {savings?.streak || 0} {t('days')}
           </p>
         </div>
       </div>
 
       <dl className="relative mt-2.5 grid grid-cols-2 gap-3 border-t border-line/50 pt-2.5">
         <div>
-          <dt className="text-[11px] text-muted">Current balance</dt>
+          <dt className="text-[11px] text-muted">{t('currentBalance')}</dt>
           <dd className="mt-0.5 text-base font-semibold text-ink">{formatMoney(savings?.balance)}</dd>
         </div>
         <div>
-          <dt className="text-[11px] text-muted">Total saved this month</dt>
+          <dt className="text-[11px] text-muted">{t('totalSavedThisMonth')}</dt>
           <dd className="mt-0.5 text-base font-semibold text-ink">
             {formatMoney(savings?.monthlySaved)}
           </dd>
@@ -62,7 +64,7 @@ export default function SavingsPocket({ savings, data }) {
 
       <div className="relative mt-2.5">
         <div className="mb-1.5 flex items-center justify-between text-[11px]">
-          <span className="text-muted">Emergency buffer progress</span>
+          <span className="text-muted">{t('emergencyBufferProgress')}</span>
           <span className="font-semibold text-burgundy">{progress}%</span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-burgundy-soft/70">
@@ -75,21 +77,21 @@ export default function SavingsPocket({ savings, data }) {
         </div>
       </div>
 
-      <div className="relative mt-2.5 rounded-xl bg-gradient-to-r from-burgundy to-burgundy-deep px-3 py-2 text-white">
+      <div className="relative mt-2.5 rounded-xl bg-burgundy px-3 py-2 text-white">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-gold-soft">
-              <Sparkles className="h-3 w-3" /> AI Daily Brief
+              <Sparkles className="h-3 w-3" /> {t('aiDailyBrief')}
             </p>
             <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-white/90">
-              {line || 'Ask the coach what to do with today’s surplus.'}
+              {line}
             </p>
           </div>
           <Link
             to="/lab"
             className="shrink-0 rounded-lg bg-white/15 px-2 py-1 text-[10px] font-semibold text-white hover:bg-white/25"
           >
-            Lab
+            {t('lab')}
           </Link>
         </div>
       </div>
