@@ -1,0 +1,24 @@
+{
+  "name": "resilience-engine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --testPathPattern=backend/services/financeEngine.test.js --no-coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/varunigabv2025/hack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/varunigabv2025/hack/issues"
+  },
+  "homepage": "https://github.com/varunigabv2025/hack#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
