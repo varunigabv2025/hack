@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Target, Trophy, TrendingUp, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import AppLayout from '../components/AppLayout'
 import GoalCard from '../components/GoalCard'
 import { useApp } from '../context/AppContext'
 import { useMoney } from '../hooks/useMoney'
+import { useLang } from '../hooks/useLang'
 
 const presets = [
   { label: '₹10,000 Emergency', target: 10000, icon: '🛡️' },
@@ -14,22 +15,40 @@ const presets = [
 ]
 
 export default function Goals() {
-  const { data } = useApp()
+  const { data, addGoal, contributeToGoal } = useApp()
   const { formatMoney } = useMoney()
-  const [goals, setGoals] = useState(() => data?.goals || [])
+  const { t } = useLang()
+  const goals = data?.goals || []
   const [showForm, setShowForm] = useState(false)
   const [newName, setNewName] = useState('')
   const [newTarget, setNewTarget] = useState('')
+  const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    if (data?.goals?.length && goals.length === 0) setGoals(data.goals)
-  }, [data?.goals, goals.length])
-
-  function addGoal(name, target, icon = '🎯') {
-    setGoals((prev) => [...prev, { id: Date.now(), name, target, current: 0, icon }])
     setShowForm(false)
-    setNewName('')
-    setNewTarget('')
+  }, [goals.length])
+
+  async function handleAdd(name, target, icon = '🎯') {
+    if (!name || !target || busy) return
+    setBusy(true)
+    try {
+      await addGoal({ name, target: Number(target), icon, current: 0 })
+      setShowForm(false)
+      setNewName('')
+      setNewTarget('')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleContribute(goalId) {
+    if (busy) return
+    setBusy(true)
+    try {
+      await contributeToGoal(goalId, 500)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -41,7 +60,7 @@ export default function Goals() {
             animate={{ opacity: 1, y: 0 }}
             className="text-2xl font-bold text-gradient-burgundy"
           >
-            Your Goals
+            {t('yourGoals')}
           </motion.h2>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -49,7 +68,7 @@ export default function Goals() {
             onClick={() => setShowForm(!showForm)}
             className="btn-primary flex items-center gap-2 text-sm"
           >
-            <Plus className="h-4 w-4" /> New Goal
+            <Plus className="h-4 w-4" /> {t('newGoal')}
           </motion.button>
         </div>
 
@@ -62,31 +81,32 @@ export default function Goals() {
               className="overflow-hidden"
             >
               <div className="card space-y-4">
-                <p className="text-sm font-semibold text-ink">Quick start from preset:</p>
+                <p className="text-sm font-semibold text-ink">{t('quickStartPreset')}</p>
                 <div className="flex flex-wrap gap-2">
                   {presets.map((p) => (
                     <motion.button
                       key={p.label}
                       whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => addGoal(p.label, p.target, p.icon)}
+                      onClick={() => handleAdd(p.label, p.target, p.icon)}
+                      disabled={busy}
                       className="btn-secondary flex items-center gap-2 text-sm"
                     >
                       <span>{p.icon}</span> {p.label}
                     </motion.button>
                   ))}
                 </div>
-                <p className="text-sm font-semibold text-ink">Or create custom:</p>
+                <p className="text-sm font-semibold text-ink">{t('orCreateCustom')}</p>
                 <div className="flex gap-3">
                   <input
                     className="input flex-1"
-                    placeholder="Goal name"
+                    placeholder={t('goalName')}
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                   />
                   <input
                     className="input w-36"
-                    placeholder="Target ₹"
+                    placeholder={t('targetAmount')}
                     inputMode="numeric"
                     value={newTarget}
                     onChange={(e) => setNewTarget(e.target.value.replace(/\D/g, ''))}
@@ -94,12 +114,11 @@ export default function Goals() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      if (newName && newTarget) addGoal(newName, Number(newTarget))
-                    }}
+                    onClick={() => handleAdd(newName, Number(newTarget))}
+                    disabled={busy}
                     className="btn-primary text-sm"
                   >
-                    Add
+                    {t('add')}
                   </motion.button>
                 </div>
               </div>
@@ -109,7 +128,7 @@ export default function Goals() {
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {goals.map((goal, i) => {
-            const pct = Math.min(100, Math.round((goal.current / goal.target) * 100))
+            const pct = Math.min(100, Math.round(((Number(goal.current) || 0) / (Number(goal.target) || 1)) * 100))
             return (
               <motion.div
                 key={goal.id}
@@ -123,7 +142,7 @@ export default function Goals() {
                   <span className="text-2xl">{goal.icon}</span>
                   <div>
                     <p className="font-semibold text-ink">{goal.name}</p>
-                    <p className="text-xs text-muted">Target: {formatMoney(goal.target)}</p>
+                    <p className="text-xs text-muted">{t('targetLabel', { amount: formatMoney(goal.target) })}</p>
                   </div>
                 </div>
                 <div className="mt-4">
@@ -133,7 +152,7 @@ export default function Goals() {
                   </div>
                   <div className="h-3 overflow-hidden rounded-full bg-line/40">
                     <motion.div
-                      className="h-full rounded-full bg-gradient-to-r from-burgundy to-gold"
+                      className="h-full rounded-full bg-burgundy"
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
                       transition={{ duration: 1.2, delay: 0.3 + i * 0.15 }}
@@ -143,14 +162,11 @@ export default function Goals() {
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => {
-                    setGoals((prev) =>
-                      prev.map((g) => g.id === goal.id ? { ...g, current: Math.min(g.target, g.current + 500) } : g)
-                    )
-                  }}
-                  className="btn-secondary mt-4 w-full text-sm"
+                  onClick={() => handleContribute(goal.id)}
+                  disabled={busy || pct >= 100}
+                  className="btn-secondary mt-4 w-full text-sm disabled:opacity-50"
                 >
-                  + Add ₹500
+                  {t('add500')}
                 </motion.button>
               </motion.div>
             )

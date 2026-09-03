@@ -1,6 +1,23 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { addTransaction, fetchNudge, getDashboard, isLiveApi, resetDemo } from '../services/api'
-import { addMockExpense, addMockLoan, normalizeDashboard, persistProfile } from '../data/mockData'
+import {
+  addTransaction,
+  contributeGoal,
+  createGoal,
+  deleteGoal,
+  fetchNudge,
+  getDashboard,
+  isLiveApi,
+  resetDemo,
+} from '../services/api'
+import {
+  addMockExpense,
+  addMockGoal,
+  addMockLoan,
+  contributeMockGoal,
+  deleteMockGoal,
+  normalizeDashboard,
+  persistProfile,
+} from '../data/mockData'
 
 const AppContext = createContext(null)
 const CURRENCY_KEY = 're_currency'
@@ -67,6 +84,43 @@ export function AppProvider({ children }) {
     return payload
   }, [])
 
+  const addGoal = useCallback(async (goal) => {
+    if (!live) {
+      const payload = normalizeDashboard(addMockGoal(goal))
+      setData(payload)
+      return payload
+    }
+    const userId = data?.user?.user_id || data?.user?.id || 'demo-user-1'
+    await createGoal({
+      user_id: userId,
+      name: goal.name,
+      target: goal.target,
+      icon: goal.icon,
+      current: goal.current || 0,
+    })
+    await refresh()
+  }, [live, data, refresh])
+
+  const contributeToGoal = useCallback(async (goalId, amount = 500) => {
+    if (!live) {
+      const payload = normalizeDashboard(contributeMockGoal(goalId, amount))
+      setData(payload)
+      return payload
+    }
+    await contributeGoal(goalId, amount)
+    await refresh()
+  }, [live, refresh])
+
+  const removeGoal = useCallback(async (goalId) => {
+    if (!live) {
+      const payload = normalizeDashboard(deleteMockGoal(goalId))
+      setData(payload)
+      return payload
+    }
+    await deleteGoal(goalId)
+    await refresh()
+  }, [live, refresh])
+
   const updateProfile = useCallback((patch) => {
     setData((prev) => {
       if (!prev) return prev
@@ -96,6 +150,9 @@ export function AppProvider({ children }) {
       updateProfile,
       addExpense,
       addLoan,
+      addGoal,
+      contributeToGoal,
+      removeGoal,
     }),
     [
       data,
@@ -111,6 +168,9 @@ export function AppProvider({ children }) {
       updateProfile,
       addExpense,
       addLoan,
+      addGoal,
+      contributeToGoal,
+      removeGoal,
     ],
   )
 

@@ -4,8 +4,10 @@ import { motion } from 'framer-motion'
 import { ArrowRight, FlaskConical, Sparkles } from 'lucide-react'
 import { generateAiBrief } from '../lib/aiBrief'
 import { fetchNudge } from '../services/api'
+import { useLang } from '../hooks/useLang'
 
 export default function AiDailyBrief({ data }) {
+  const { t } = useLang()
   const [brief, setBrief] = useState(() => (data ? generateAiBrief(data) : null))
   const [nudgeLine, setNudgeLine] = useState('')
 
@@ -29,7 +31,7 @@ export default function AiDailyBrief({ data }) {
     <motion.section
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-2xl border border-burgundy/15 bg-gradient-to-r from-burgundy to-burgundy-deep px-4 py-3.5 text-white shadow-[0_8px_24px_rgba(74,26,61,0.18)]"
+      className="relative overflow-hidden rounded-2xl border border-burgundy/15 bg-burgundy px-4 py-3.5 text-white"
     >
       <div className="pointer-events-none absolute -right-8 top-0 h-24 w-24 rounded-full bg-gold/15 blur-2xl" />
 
@@ -38,7 +40,7 @@ export default function AiDailyBrief({ data }) {
           <div className="mb-1 flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5 text-gold-soft" />
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-soft">
-              AI Daily Brief
+              {t('aiDailyBrief')}
             </p>
           </div>
           <p className="text-sm font-semibold tracking-tight">{brief.greeting}</p>
@@ -53,13 +55,13 @@ export default function AiDailyBrief({ data }) {
             to="/lab"
             className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-gold px-3 text-xs font-semibold text-white shadow-sm"
           >
-            <FlaskConical className="h-3.5 w-3.5" /> Lab
+            <FlaskConical className="h-3.5 w-3.5" /> {t('lab')}
           </Link>
           <Link
             to="/schemes"
             className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-semibold text-white"
           >
-            Schemes <ArrowRight className="h-3.5 w-3.5" />
+            {t('schemes')} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { schemes } from '../data/schemes'
 import { generateFallbackSchemeInsight } from './schemeInsight'
+import { getPersonalization } from './personalization'
 
 function clamp(n, min, max) {
   return Math.min(max, Math.max(min, n))
@@ -14,6 +15,8 @@ export function analyseSchemes(data) {
   const income = data?.income || {}
   const savings = data?.savings || {}
   const resilience = data?.resilience || {}
+  const pers = getPersonalization(data)
+  const boostIds = new Set(pers.items.flatMap((i) => i.schemeBoost || []))
 
   const ctx = {
     occupation: user.occupation || 'Uber',
@@ -27,16 +30,22 @@ export function analyseSchemes(data) {
     suggested: savings.suggested || 0,
     buffer: savings.emergencyProgress || 0,
     score: resilience.score || 0,
+    focus: pers.items.map((i) => i.id),
   }
 
   const ranked = schemes
     .map((scheme) => {
-      const match = clamp(Math.round(scheme.fit(ctx)), 0, 100)
+      let match = clamp(Math.round(scheme.fit(ctx)), 0, 100)
+      if (boostIds.has(scheme.id)) match = clamp(match + 12, 0, 100)
+      const personalizedNote =
+        boostIds.has(scheme.id) && pers.primary
+          ? ` Elevated for your ${pers.primary.short.toLowerCase()} focus.`
+          : ''
       return {
         ...scheme,
         match,
         priority: match >= 85 ? 'High' : match >= 70 ? 'Medium' : 'Low',
-        reason: scheme.why(ctx),
+        reason: `${scheme.why(ctx)}${personalizedNote}`,
       }
     })
     .sort((a, b) => b.match - a.match)
@@ -54,8 +63,9 @@ export function analyseSchemes(data) {
       high,
       medium,
       topId: ranked[0]?.id,
-      headline:
-        high >= 3
+      headline: pers.primary
+        ? `Personalized for ${pers.primary.short.toLowerCase()}: focus on the top ${Math.min(3, ranked.length)} schemes first.`
+        : high >= 3
           ? `${high} schemes look like a strong fit for your gig profile right now.`
           : `We found ${ranked.length} schemes; focus on the top ${Math.min(3, ranked.length)} first.`,
     },
