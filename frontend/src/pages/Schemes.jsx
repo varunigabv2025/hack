@@ -8,14 +8,15 @@ import Skeleton from '../components/Skeleton'
 import ErrorState from '../components/ErrorState'
 import { useApp } from '../context/AppContext'
 import { useMoney } from '../hooks/useMoney'
+import { useLang } from '../hooks/useLang'
 import { fetchSchemeAnalysis } from '../services/api'
 import { analyseSchemes } from '../lib/schemeAnalysis'
 import { generateAiBrief } from '../lib/aiBrief'
 
 const TABS = [
-  { id: 'radar', label: 'Radar', icon: Radar },
-  { id: 'journey', label: 'Journey', icon: Route },
-  { id: 'vault', label: 'Docs', icon: FileText },
+  { id: 'radar', labelKey: 'tabRadar', icon: Radar },
+  { id: 'journey', labelKey: 'tabJourney', icon: Route },
+  { id: 'vault', labelKey: 'tabDocs', icon: FileText },
 ]
 
 const DOC_KEY = 're_scheme_docs'
@@ -53,7 +54,7 @@ function splitNextAction(text = '') {
   return { kicker: text.slice(0, idx).trim() || 'Next', body: text.slice(idx + 1).trim() }
 }
 
-function MatchRing({ value }) {
+function MatchRing({ value, matchLabel }) {
   const r = 38
   const c = 2 * Math.PI * r
   const offset = c - (Math.min(100, value) / 100) * c
@@ -76,15 +77,15 @@ function MatchRing({ value }) {
       />
       <defs>
         <linearGradient id="matchGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#6B2D5B" />
-          <stop offset="100%" stopColor="#C9842F" />
+          <stop offset="0%" stopColor="#6b2148" />
+          <stop offset="100%" stopColor="#a86b2d" />
         </linearGradient>
       </defs>
-      <text x="48" y="46" textAnchor="middle" fontSize="18" fontWeight="800" fill="#6B2D5B">
+      <text x="48" y="46" textAnchor="middle" fontSize="18" fontWeight="800" fill="#6b2148">
         {value}%
       </text>
       <text x="48" y="62" textAnchor="middle" fontSize="8" fontWeight="700" fill="#8A7F88" letterSpacing="0.12em">
-        MATCH
+        {matchLabel}
       </text>
     </svg>
   )
@@ -96,9 +97,17 @@ function priorityClass(priority) {
   return 'bg-beige text-muted'
 }
 
+function priorityLabel(t, priority) {
+  if (priority === 'High') return t('high')
+  if (priority === 'Medium') return t('medium')
+  if (priority === 'Low') return t('low')
+  return priority
+}
+
 export default function Schemes() {
   const { data, status, refresh } = useApp()
   const { formatMoney } = useMoney()
+  const { t } = useLang()
   const [analysis, setAnalysis] = useState(null)
   const [loadingAi, setLoadingAi] = useState(false)
   const [tab, setTab] = useState('radar')
@@ -157,20 +166,20 @@ export default function Schemes() {
     <AppLayout>
       {status === 'loading' ? <Skeleton /> : null}
       {status === 'error' ? (
-        <ErrorState message="Could not load scheme analysis." onRetry={refresh} />
+        <ErrorState message={t('errorLoadSchemes')} onRetry={refresh} />
       ) : null}
 
       {status === 'ready' && data && analysis ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-3">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0 max-w-2xl">
-              <p className="page-kicker">Scheme Studio</p>
+              <p className="page-kicker">{t('schemeStudio')}</p>
               <h2 className="mt-1 flex items-center gap-2.5 text-[1.85rem] font-bold leading-none tracking-tight text-burgundy sm:text-[2.15rem]">
                 <Landmark className="h-8 w-8 shrink-0" aria-hidden="true" />
-                Scheme Matcher
+                {t('schemeMatcher')}
               </h2>
               <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-muted">
-                Find government schemes, welfare programs and financial protection relevant to your profile.
+                {t('schemeMatcherIntro')}
               </p>
               <p className="mt-1.5 text-[12px] font-medium text-ink/70">
                 {analysis.ctx.occupation} · {analysis.ctx.state} · {analysis.summary.high} high-fit matches
@@ -179,20 +188,20 @@ export default function Schemes() {
             </div>
 
             <div className="inline-flex shrink-0 gap-1 self-start rounded-full border border-line bg-white/80 p-1 lg:self-end">
-              {TABS.map((t) => {
-                const Icon = t.icon
-                const on = tab === t.id
+              {TABS.map((tabItem) => {
+                const Icon = tabItem.icon
+                const on = tab === tabItem.id
                 return (
                   <button
-                    key={t.id}
+                    key={tabItem.id}
                     type="button"
-                    onClick={() => setTab(t.id)}
+                    onClick={() => setTab(tabItem.id)}
                     className={[
                       'inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold transition-colors',
                       on ? 'bg-burgundy text-white' : 'text-muted hover:bg-burgundy-soft hover:text-burgundy',
                     ].join(' ')}
                   >
-                    <Icon className="h-3.5 w-3.5" /> {t.label}
+                    <Icon className="h-3.5 w-3.5" /> {t(tabItem.labelKey)}
                   </button>
                 )
               })}
@@ -201,13 +210,15 @@ export default function Schemes() {
 
           <div className="grid grid-cols-2 divide-x divide-y divide-line/60 overflow-hidden rounded-[1.25rem] border border-line/80 bg-white/75 md:grid-cols-4 md:divide-y-0">
             {[
-              { value: formatMoney(analysis.ctx.baseline), label: 'Baseline' },
-              { value: `${analysis.ctx.score} / 100`, label: 'Resilience' },
-              { value: `${analysis.ctx.streak} DAYS`, label: 'Save streak' },
-              { value: `${analysis.ctx.buffer}%`, label: 'Buffer' },
+              { value: formatMoney(analysis.ctx.baseline), label: t('baseline') },
+              { value: `${analysis.ctx.score} / 100`, label: t('personalResilience') },
+              { value: `${analysis.ctx.streak} ${t('days').toUpperCase()}`, label: t('saveStreak'), gold: true },
+              { value: `${analysis.ctx.buffer}%`, label: t('buffer') },
             ].map((item) => (
               <div key={item.label} className="px-4 py-3">
-                <p className="text-lg font-bold tabular-nums tracking-tight text-burgundy">{item.value}</p>
+                <p className={['text-lg font-bold tabular-nums tracking-tight', item.gold ? 'text-gold' : 'text-burgundy'].join(' ')}>
+                  {item.value}
+                </p>
                 <p className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.12em] text-muted">{item.label}</p>
               </div>
             ))}
@@ -225,19 +236,19 @@ export default function Schemes() {
                 <article className="card-panel">
                   {active && (
                     <div className="grid gap-4 lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,0.85fr)] lg:items-start">
-                      <MatchRing value={active.match} />
+                      <MatchRing value={active.match} matchLabel={t('match')} />
                       <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-gold">Best match</p>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-burgundy">{t('bestMatch')}</p>
                         <h3 className="mt-1.5 text-[1.25rem] font-bold leading-tight text-ink">{active.name}</h3>
                         <p className="mt-1 text-[12px] text-muted">
                           {active.category}
                           <span className="mx-1.5 text-line">·</span>
-                          {active.priority} fit
+                          {priorityLabel(t, active.priority)} fit
                         </p>
                         <p className="mt-2 text-[13px] leading-relaxed text-ink/85">{active.reason}</p>
                         {active.benefit && (
                           <div className="mt-3 rounded-xl bg-ivory/80 px-3.5 py-3">
-                            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gold">Why it matters</p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-burgundy">{t('whyItMatters')}</p>
                             <p className="mt-1.5 text-[13px] leading-relaxed text-ink/80">{active.benefit}</p>
                           </div>
                         )}
@@ -249,12 +260,12 @@ export default function Schemes() {
                           className="mb-3 inline-flex cursor-pointer items-center gap-1.5 text-[13px] font-semibold text-burgundy hover:opacity-80"
                         >
                           <FileText className="h-3.5 w-3.5" />
-                          Open document checklist
+                          {t('openDocumentChecklist')}
                         </button>
                         {brief && (
                           <div className="rounded-xl bg-burgundy px-3.5 py-3 text-white">
                             <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-gold-soft">
-                              <Sparkles className="h-3 w-3" /> AI brief
+                              <Sparkles className="h-3 w-3" /> {t('aiBrief')}
                             </p>
                             <p className="mt-1.5 text-[12px] font-semibold text-white/70">{next.kicker}</p>
                             <p className="text-[13px] leading-snug text-white">{next.body}</p>
@@ -267,7 +278,7 @@ export default function Schemes() {
                             rel="noreferrer"
                             className="mt-3 inline-flex cursor-pointer items-center gap-1.5 text-[13px] font-semibold text-burgundy hover:opacity-80"
                           >
-                            View official page <ExternalLink className="h-3.5 w-3.5" />
+                            {t('viewOfficialPage')} <ExternalLink className="h-3.5 w-3.5" />
                           </a>
                         )}
                       </div>
@@ -277,8 +288,8 @@ export default function Schemes() {
 
                 <article className="card-panel !px-6 !py-6">
                   <div className="mb-5 px-1">
-                    <h3 className="text-[1.35rem] font-bold text-ink">Best matches for you</h3>
-                    <p className="mt-1 text-[15px] text-muted">Ranked by profile fit</p>
+                    <h3 className="text-[1.35rem] font-bold text-ink">{t('bestMatchesForYou')}</h3>
+                    <p className="mt-1 text-[15px] text-muted">{t('rankedByProfileFit')}</p>
                   </div>
                   <ul className="flex flex-1 flex-col">
                     {analysis.ranked.map((scheme) => {
@@ -302,12 +313,12 @@ export default function Schemes() {
                                     priorityClass(scheme.priority),
                                   ].join(' ')}
                                 >
-                                  {scheme.priority}
+                                  {priorityLabel(t, scheme.priority)}
                                 </span>
                               </div>
                               <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-beige">
                                 <div
-                                  className="h-full rounded-full bg-gradient-to-r from-burgundy to-gold"
+                                  className="h-full rounded-full bg-burgundy"
                                   style={{ width: `${scheme.match}%` }}
                                 />
                               </div>
@@ -341,7 +352,7 @@ export default function Schemes() {
                 </article>
                 {(analysis.insight?.actionPlan || []).map((step) => (
                   <article key={`${step.step}-${step.schemeId}`} className="card-panel">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gold">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-burgundy">
                       Step {step.step}
                     </p>
                     <p className="mt-1 text-[14px] font-bold text-ink">{step.scheme}</p>
@@ -360,9 +371,9 @@ export default function Schemes() {
                 className="flex flex-col gap-4"
               >
                 <div className="px-1">
-                  <h3 className="text-[1.35rem] font-bold text-ink">Document checklists</h3>
+                  <h3 className="text-[1.35rem] font-bold text-ink">{t('documentChecklists')}</h3>
                   <p className="mt-1 text-[15px] text-muted">
-                    A separate list for each scheme. Tick what you already have.
+                    {t('documentChecklistsHint')}
                   </p>
                 </div>
                 {analysis.ranked.map((scheme) => {
@@ -395,7 +406,7 @@ export default function Schemes() {
                           <p className="mt-1 text-[13px] text-muted">
                             {scheme.category}
                             <span className="mx-1.5 text-line">·</span>
-                            {done} of {items.length} ready
+                            {t('docsReadyCount', { done, total: items.length })}
                           </p>
                         </div>
                         <p className="text-[16px] font-bold tabular-nums text-burgundy">{scheme.match}%</p>
@@ -403,7 +414,7 @@ export default function Schemes() {
 
                       <div className="mt-3 h-2 overflow-hidden rounded-full bg-beige">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-burgundy to-gold"
+                          className="h-full rounded-full bg-burgundy"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -454,7 +465,7 @@ export default function Schemes() {
 
           {tab === 'radar' && (analysis.insight?.actionPlan || []).length > 0 && (
             <section className="card-panel !py-3.5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-gold">Next best action</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-burgundy">{t('nextBestAction')}</p>
               <ol className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-0">
                 {(analysis.insight.actionPlan).slice(0, 3).map((step, i, arr) => (
                   <li key={`${step.step}-${step.schemeId}`} className="flex min-w-0 flex-1 items-center">
@@ -477,7 +488,7 @@ export default function Schemes() {
                       </span>
                     </button>
                     {i < arr.length - 1 ? (
-                      <ArrowRight className="mx-1 hidden h-4 w-4 shrink-0 text-gold/80 sm:block" aria-hidden="true" />
+                      <ArrowRight className="mx-1 hidden h-4 w-4 shrink-0 text-burgundy/80 sm:block" aria-hidden="true" />
                     ) : null}
                   </li>
                 ))}

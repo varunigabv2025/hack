@@ -14,6 +14,9 @@ import Schemes from './pages/Schemes'
 import AiLab from './pages/AiLab'
 import Loans from './pages/Loans'
 import Expenses from './pages/Expenses'
+import BadWeek from './pages/BadWeek'
+import Passport from './pages/Passport'
+import ResponsibleAi from './pages/ResponsibleAi'
 
 export default function App() {
   return (
@@ -22,6 +25,9 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/bad-week" element={<BadWeek />} />
+            <Route path="/passport" element={<Passport />} />
+            <Route path="/responsible-ai" element={<ResponsibleAi />} />
             <Route path="/savings" element={<Savings />} />
             <Route path="/score" element={<ResilienceScorePage />} />
             <Route path="/transactions" element={<Transactions />} />

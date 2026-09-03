@@ -9,9 +9,11 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const loanRoutes = require('./routes/loanRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const simulatorRoutes = require('./routes/simulatorRoutes');
+const goalRoutes = require('./routes/goalRoutes');
 const nudgeRoutes = require('./routes/nudge');
 const schemesRoutes = require('./routes/schemes');
 const demoRoutes = require('./routes/demo');
+const voiceRoutes = require('./routes/voice');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorHandler');
@@ -45,11 +47,14 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/simulator', simulatorRoutes);
+app.use('/api/goals', goalRoutes);
+app.use('/goals', goalRoutes);
 
 // Member 4 AI nudge / schemes / demo (paths match frontend Vite proxy)
 app.use('/nudge', nudgeRoutes);
 app.use('/schemes', schemesRoutes);
 app.use('/demo', demoRoutes);
+app.use('/voice', voiceRoutes);
 
 // Error handling middleware (must be last)
 app.use(notFound);
