@@ -28,7 +28,7 @@ function buildTitle({ trend, streak, change, score }) {
  * @param {object} facts - backend-calculated fields only
  * @returns {{ title: string, message: string, source: 'fallback', triggered: boolean }}
  */
-export function generateFallbackNudge(facts = {}) {
+function generateFallbackNudge(facts = {}) {
   const f = pick(facts)
   const parts = []
 
@@ -81,7 +81,7 @@ export function generateFallbackNudge(facts = {}) {
   }
 }
 
-export function extractNudgeFacts(dashboard = {}) {
+function extractNudgeFacts(dashboard = {}) {
   const income = dashboard.income || dashboard.income_profile || {}
   const savings = dashboard.savings || dashboard.savings_pocket || {}
   const resilience = dashboard.resilience || dashboard.resilience_score || {}
@@ -96,3 +96,5 @@ export function extractNudgeFacts(dashboard = {}) {
     baseline: income.baseline,
   }
 }
+
+module.exports = { generateFallbackNudge, extractNudgeFacts }

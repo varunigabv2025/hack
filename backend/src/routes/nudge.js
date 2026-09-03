@@ -1,10 +1,10 @@
-import { Router } from 'express'
-import { generateAiNudge } from '../services/aiNudge.js'
-import { generateAiChatReply } from '../services/aiChat.js'
-import { hasGeminiKey, geminiModel } from '../services/gemini.js'
-import { extractNudgeFacts, generateFallbackNudge } from '../services/nudgeEngine.js'
+const express = require('express')
+const { generateAiNudge } = require('../services/aiNudge')
+const { generateAiChatReply } = require('../services/aiChat')
+const { hasGeminiKey, geminiModel } = require('../services/gemini')
+const { extractNudgeFacts, generateFallbackNudge } = require('../services/nudgeEngine')
 
-const router = Router()
+const router = express.Router()
 
 /** POST /nudge/chat — Gemini coach reply from dashboard facts */
 router.post('/chat', async (req, res, next) => {
@@ -65,4 +65,4 @@ router.get('/health', (_req, res) => {
   })
 })
 
-export default router
+module.exports = router

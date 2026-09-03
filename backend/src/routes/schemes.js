@@ -1,8 +1,8 @@
-import { Router } from 'express'
-import { analyseSchemesWithAi } from '../services/schemeAnalyser.js'
-import { hasGeminiKey } from '../services/gemini.js'
+const express = require('express')
+const { analyseSchemesWithAi } = require('../services/schemeAnalyser')
+const { hasGeminiKey } = require('../services/gemini')
 
-const router = Router()
+const router = express.Router()
 
 /**
  * POST /schemes/analyse
@@ -25,4 +25,4 @@ router.get('/health', (_req, res) => {
   })
 })
 
-export default router
+module.exports = router

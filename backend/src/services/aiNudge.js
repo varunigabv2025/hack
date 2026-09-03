@@ -1,8 +1,8 @@
 /**
  * Member 4 — Gemini nudge (facts only). Falls back if key missing / API fails.
  */
-import { generateFallbackNudge } from './nudgeEngine.js'
-import { generateGeminiJson, hasGeminiKey } from './gemini.js'
+const { generateFallbackNudge } = require('./nudgeEngine')
+const { generateGeminiJson, hasGeminiKey } = require('./gemini')
 
 const SYSTEM_PROMPT = `You are the Resilience Engine coach for Indian gig workers.
 You rewrite backend FACTS into one short, encouraging message.
@@ -23,7 +23,7 @@ function factsToPrompt(facts) {
  * @param {object} facts
  * @returns {Promise<{ title: string, message: string, source: 'ai'|'fallback', triggered: boolean }>}
  */
-export async function generateAiNudge(facts = {}) {
+async function generateAiNudge(facts = {}) {
   if (!hasGeminiKey()) {
     return generateFallbackNudge(facts)
   }
@@ -52,3 +52,5 @@ export async function generateAiNudge(facts = {}) {
     return generateFallbackNudge(facts)
   }
 }
+
+module.exports = { generateAiNudge }

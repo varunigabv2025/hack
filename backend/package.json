@@ -1,20 +1,31 @@
 {
-  "name": "resilience-engine-member4",
+  "name": "resilience-engine-backend",
   "version": "1.0.0",
-  "description": "Member 4 — AI Nudge, demo dataset, and integration helpers",
-  "type": "module",
+  "description": "Backend API for Resilience Engine - Income intelligence for gig workers",
   "main": "src/server.js",
   "scripts": {
-    "dev": "node --watch src/server.js",
     "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node --test src/services/nudgeEngine.test.js src/services/financeEngine.test.js",
     "test:nudge": "node --test src/services/nudgeEngine.test.js"
   },
-  "keywords": ["resilience-engine", "nudge", "hackathon"],
-  "license": "ISC",
+  "keywords": [
+    "fintech",
+    "gig-economy",
+    "financial-inclusion",
+    "resilience-score"
+  ],
+  "author": "Team ALCHEMY",
+  "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "openai": "^7.9.0"
+    "axios": "^1.20.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }

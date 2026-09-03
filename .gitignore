@@ -1,13 +1,44 @@
+# Dependencies
 node_modules/
-dist/
-dist-ssr/
+backend/node_modules/
+frontend/node_modules/
+
+# Environment variables
 .env
 .env.*
 !.env.example
+backend/.env
+frontend/.env
+*.env.local
 *.local
-.DS_Store
-.vscode/
-.idea/
-frontend/preview/
+
+# Logs
 *.log
 npm-debug.log*
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+.next/
+out/
+frontend/preview/
+
+# Testing
+coverage/
+
+# Temporary files
+*.tmp
+.cache/

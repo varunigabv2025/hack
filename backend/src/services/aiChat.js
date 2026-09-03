@@ -1,8 +1,8 @@
 /**
  * Gemini chat coach — answers from supplied dashboard facts only.
  */
-import { generateFallbackNudge, extractNudgeFacts } from './nudgeEngine.js'
-import { generateGeminiText, hasGeminiKey } from './gemini.js'
+const { generateFallbackNudge, extractNudgeFacts } = require('./nudgeEngine')
+const { generateGeminiText, hasGeminiKey } = require('./gemini')
 
 const SYSTEM_PROMPT = `You are the Resilience Engine coach for Indian gig workers.
 Answer the user's question using ONLY the FACTS JSON.
@@ -12,7 +12,7 @@ STRICT RULES:
 3. Keep the reply under 70 words, warm and practical.
 4. If the facts do not contain the answer, say so and suggest Scheme Studio or What-If Lab.`
 
-export async function generateAiChatReply({ question, dashboard = {}, facts } = {}) {
+async function generateAiChatReply({ question, dashboard = {}, facts } = {}) {
   const resolvedFacts = facts && Object.keys(facts).length ? facts : extractNudgeFacts(dashboard)
   const fallback = generateFallbackNudge(resolvedFacts).message
 
@@ -59,3 +59,5 @@ export async function generateAiChatReply({ question, dashboard = {}, facts } = 
     return { reply: fallback, source: 'fallback' }
   }
 }
+
+module.exports = { generateAiChatReply }

@@ -4,7 +4,7 @@
  * Never invents eligibility or new numbers.
  */
 
-import { generateGeminiJson, hasGeminiKey } from './gemini.js'
+const { generateGeminiJson, hasGeminiKey } = require('./gemini')
 
 function clamp(n, min, max) {
   return Math.min(max, Math.max(min, n))
@@ -101,7 +101,7 @@ const SCHEME_CATALOG = [
   },
 ]
 
-export function buildProfileContext(body = {}) {
+function buildProfileContext(body = {}) {
   const user = body.user || {}
   const income = body.income || body.income_profile || {}
   const savings = body.savings || body.savings_pocket || {}
@@ -122,7 +122,7 @@ export function buildProfileContext(body = {}) {
   }
 }
 
-export function rankSchemes(ctx) {
+function rankSchemes(ctx) {
   return SCHEME_CATALOG.map((scheme) => {
     const match = clamp(Math.round(scheme.fit(ctx)), 0, 100)
     return {
@@ -136,7 +136,7 @@ export function rankSchemes(ctx) {
   }).sort((a, b) => b.match - a.match)
 }
 
-export function generateFallbackSchemeInsight(ctx, ranked) {
+function generateFallbackSchemeInsight(ctx, ranked) {
   const top = ranked.filter((s) => s.priority === 'High').slice(0, 3)
   const focus = top.length ? top : ranked.slice(0, 3)
   const names = focus.map((s) => s.name).join(', ')
@@ -198,7 +198,7 @@ STRICT RULES:
   "actionPlan": [{"step":1,"schemeId":"...","scheme":"...","action":"..."}]
 }`
 
-export async function generateAiSchemeInsight(ctx, ranked) {
+async function generateAiSchemeInsight(ctx, ranked) {
   const fallback = generateFallbackSchemeInsight(ctx, ranked)
   if (!hasGeminiKey()) return fallback
 
@@ -233,7 +233,7 @@ export async function generateAiSchemeInsight(ctx, ranked) {
   }
 }
 
-export async function analyseSchemesWithAi(body = {}) {
+async function analyseSchemesWithAi(body = {}) {
   const ctx = buildProfileContext(body)
   const ranked = rankSchemes(ctx)
   const forceFallback = body.forceFallback === true
@@ -252,4 +252,12 @@ export async function analyseSchemesWithAi(body = {}) {
       topId: ranked[0]?.id,
     },
   }
+}
+
+module.exports = {
+  buildProfileContext,
+  rankSchemes,
+  generateFallbackSchemeInsight,
+  generateAiSchemeInsight,
+  analyseSchemesWithAi,
 }

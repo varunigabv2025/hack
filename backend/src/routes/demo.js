@@ -1,8 +1,8 @@
-import { Router } from 'express'
-import { demoProfiles, getDemoProfile } from '../data/demoProfiles.js'
-import { generateFallbackNudge } from '../services/nudgeEngine.js'
+const express = require('express')
+const { demoProfiles, getDemoProfile } = require('../data/demoProfiles')
+const { generateFallbackNudge } = require('../services/nudgeEngine')
 
-const router = Router()
+const router = express.Router()
 
 /** GET /demo/profiles — list deterministic workers */
 router.get('/profiles', (_req, res) => {
@@ -45,4 +45,4 @@ router.get('/preview/:id', (req, res) => {
   res.json({ profile: { id: profile.id, name: profile.name, story: profile.story }, expected: e, nudge })
 })
 
-export default router
+module.exports = router

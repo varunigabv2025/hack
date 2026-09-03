@@ -3,7 +3,7 @@
  * Repeatable for judge walkthrough. Amounts are INR integers.
  */
 
-export const demoProfiles = [
+const demoProfiles = [
   {
     id: 'U001',
     name: 'Arjun',
@@ -132,6 +132,8 @@ export const demoProfiles = [
   },
 ]
 
-export function getDemoProfile(id = 'U001') {
+function getDemoProfile(id = 'U001') {
   return demoProfiles.find((p) => p.id === id) || demoProfiles[0]
 }
+
+module.exports = { demoProfiles, getDemoProfile }

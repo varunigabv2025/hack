@@ -1,11 +1,10 @@
 /**
  * Google Gemini helper. Returns parsed JSON / text, or null if no key.
  */
-import path from 'path'
-import { fileURLToPath } from 'url'
-import dotenv from 'dotenv'
+const path = require('path')
+const dotenv = require('dotenv')
 
-dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), '../../.env') })
+dotenv.config({ path: path.join(__dirname, '../../.env') })
 
 const FALLBACK_MODELS = [
   'gemini-3.6-flash',
@@ -13,17 +12,17 @@ const FALLBACK_MODELS = [
   'gemini-flash-latest',
 ]
 
-export function geminiApiKey() {
+function geminiApiKey() {
   return String(process.env.GEMINI_API_KEY || '')
     .trim()
     .replace(/^['"]|['"]$/g, '')
 }
 
-export function hasGeminiKey() {
+function hasGeminiKey() {
   return Boolean(geminiApiKey())
 }
 
-export function geminiModel() {
+function geminiModel() {
   return process.env.GEMINI_MODEL?.trim() || 'gemini-3.6-flash'
 }
 
@@ -118,7 +117,7 @@ async function callGemini(opts) {
   throw lastErr
 }
 
-export async function generateGeminiJson({ systemPrompt, userPrompt, temperature = 0.4 }) {
+async function generateGeminiJson({ systemPrompt, userPrompt, temperature = 0.4 }) {
   let raw = ''
   try {
     raw = await callGemini({ systemPrompt, userPrompt, temperature, json: true })
@@ -135,8 +134,16 @@ export async function generateGeminiJson({ systemPrompt, userPrompt, temperature
   }
 }
 
-export async function generateGeminiText({ systemPrompt, userPrompt, temperature = 0.4 }) {
+async function generateGeminiText({ systemPrompt, userPrompt, temperature = 0.4 }) {
   const raw = await callGemini({ systemPrompt, userPrompt, temperature, json: false })
   if (raw == null) return null
   return String(raw).trim()
+}
+
+module.exports = {
+  geminiApiKey,
+  hasGeminiKey,
+  geminiModel,
+  generateGeminiJson,
+  generateGeminiText,
 }

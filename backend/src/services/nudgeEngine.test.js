@@ -1,6 +1,6 @@
-import { test } from 'node:test'
-import assert from 'node:assert/strict'
-import { generateFallbackNudge } from './nudgeEngine.js'
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const { generateFallbackNudge } = require('./nudgeEngine')
 
 test('uptrend + streak + score change produces encouraging message with facts only', () => {
   const nudge = generateFallbackNudge({
