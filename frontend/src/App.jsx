@@ -15,6 +15,7 @@ import Expenses from './pages/Expenses'
 import BadWeek from './pages/BadWeek'
 import Passport from './pages/Passport'
 import ResponsibleAi from './pages/ResponsibleAi'
+import ProtectionHub from './pages/ProtectionHub'
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/goals" element={<Goals />} />
           <Route path="/network" element={<GlobalNetwork />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/protection" element={<ProtectionHub />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
