@@ -1,7 +1,7 @@
 # RESILIENCE ENGINE
 
-**Team ALCHEMY (Team 4) · VIT Chennai Hackathon**  
-*Sep 3, 12:00 PM – Sep 4, 2:00 PM | 24-hour build*
+**Team ALCHEMY (Team 4) Â· VIT Chennai Hackathon**  
+*Sep 3, 12:00 PM â Sep 4, 2:00 PM | 24-hour build*
 
 ## Problem
 
@@ -19,15 +19,15 @@ Gig workers and informal laborers face unique financial challenges due to irregu
 
 ```
 Transaction 
-    ↓
+    â
 Income Pattern Analyzer (baseline, volatility, trend, prediction)
-    ↓
+    â
 Predictive Savings Pocket (surplus detection, auto-suggest, streak tracking)
-    ↓
+    â
 Resilience Score (0-100 score with factor breakdown)
-    ↓
+    â
 Loan Risk Detection (stacking alerts, payment burden)
-    ↓
+    â
 AI Nudge (plain-language personalized guidance)
 ```
 
@@ -99,7 +99,7 @@ Based on user profile: age, income, occupation, state
 | **Frontend** | React + Vite, Tailwind CSS |
 | **Backend** | Node.js, Express |
 | **Database** | MongoDB, Mongoose |
-| **AI** | OpenAI API (GPT-3.5/4) |
+| **AI** | Google Gemini (with offline rule-based fallback) |
 | **Charts** | Recharts |
 | **Testing** | Postman |
 | **Version Control** | GitHub |
@@ -118,7 +118,7 @@ Based on user profile: age, income, occupation, state
 - MongoDB connection
 - Mongoose models (User, Transaction, Loan, FinancialProfile)
 - API routes (profile, transactions, loans, dashboard)
-- Pipeline orchestration (POST /api/transactions → full pipeline)
+- Pipeline orchestration (POST /api/transactions â full pipeline)
 - Error handling
 - Integration with Member 2's finance engine
 
@@ -140,7 +140,7 @@ Based on user profile: age, income, occupation, state
 - Responsive design
 
 ### Member 4: AI Nudge, Integration & Demo
-- OpenAI integration (nudge generation)
+- Gemini integration (nudge generation + chat coach)
 - Government scheme matcher
 - End-to-end integration testing
 - Demo data seeding (3-4 realistic personas)
@@ -152,31 +152,31 @@ Based on user profile: age, income, occupation, state
 ### System Flow
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     FRONTEND (React + Vite)                  │
-│  Dashboard | Savings | Score | Loans | Schemes | AI Nudge    │
-└─────────────────────────┬───────────────────────────────────┘
-                          │ REST API (JSON)
-                          ↓
-┌─────────────────────────────────────────────────────────────┐
-│                   BACKEND (Node.js + Express)                │
-│                                                              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐  │
-│  │  Controllers │───→│   Services   │───→│    Models    │  │
-│  │  (Routes)    │    │  (Pipeline)  │    │  (Mongoose)  │  │
-│  └──────────────┘    └──────┬───────┘    └──────────────┘  │
-│                              │                               │
-│                              ↓                               │
-│                    ┌──────────────────┐                     │
-│                    │ Finance Engine   │ ← Member 2          │
-│                    │ (Calculations)   │                     │
-│                    └──────────────────┘                     │
-└─────────────────────────────────────────────────────────────┘
-                          │
-                          ↓
-                   ┌──────────────┐
-                   │   MongoDB    │
-                   └──────────────┘
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â                     FRONTEND (React + Vite)                  â
+â  Dashboard | Savings | Score | Loans | Schemes | AI Nudge    â
+âââââââââââââââââââââââââââ¬ââââââââââââââââââââââââââââââââââââ
+                          â REST API (JSON)
+                          â
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â                   BACKEND (Node.js + Express)                â
+â                                                              â
+â  ââââââââââââââââ    ââââââââââââââââ    ââââââââââââââââ  â
+â  â  Controllers ââââââ   Services   ââââââ    Models    â  â
+â  â  (Routes)    â    â  (Pipeline)  â    â  (Mongoose)  â  â
+â  ââââââââââââââââ    ââââââââ¬ââââââââ    ââââââââââââââââ  â
+â                              â                               â
+â                              â                               â
+â                    ââââââââââââââââââââ                     â
+â                    â Finance Engine   â â Member 2          â
+â                    â (Calculations)   â                     â
+â                    ââââââââââââââââââââ                     â
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+                          â
+                          â
+                   ââââââââââââââââ
+                   â   MongoDB    â
+                   ââââââââââââââââ
 ```
 
 ### Data Flow (POST /api/transactions)
@@ -190,7 +190,7 @@ Based on user profile: age, income, occupation, state
    - Loan risk
 4. **Store**: Save FinancialProfile to MongoDB
 5. **Respond**: Return complete financial snapshot + nudge_context
-6. **Frontend**: Member 4's AI calls OpenAI to generate nudge
+6. **Frontend**: Member 4's AI calls Gemini to generate nudge (falls back offline)
 
 ## API Contract
 
@@ -224,36 +224,36 @@ See detailed specification: [`shared/api-contract.md`](./shared/api-contract.md)
 
 ```
 hack/
-├── backend/              # Member 1: Node.js + Express + MongoDB
-│   ├── src/
-│   │   ├── config/       # Database connection
-│   │   ├── controllers/  # Route handlers
-│   │   ├── models/       # Mongoose schemas
-│   │   ├── routes/       # API routes
-│   │   ├── services/     # Business logic + pipeline
-│   │   ├── middleware/   # Error handling
-│   │   ├── app.js
-│   │   └── server.js
-│   ├── package.json
-│   ├── .env.example
-│   └── README.md
-│
-├── frontend/             # Member 3: React + Vite + Tailwind
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── package.json
-│   └── README.md
-│
-├── shared/
-│   └── api-contract.md   # API specification (agreed at Hour 0)
-│
-├── README.md
-├── .gitignore
-└── .env.example
+âââ backend/              # Member 1: Node.js + Express + MongoDB
+â   âââ src/
+â   â   âââ config/       # Database connection
+â   â   âââ controllers/  # Route handlers
+â   â   âââ models/       # Mongoose schemas
+â   â   âââ routes/       # API routes
+â   â   âââ services/     # Business logic + pipeline
+â   â   âââ middleware/   # Error handling
+â   â   âââ app.js
+â   â   âââ server.js
+â   âââ package.json
+â   âââ .env.example
+â   âââ README.md
+â
+âââ frontend/             # Member 3: React + Vite + Tailwind
+â   âââ src/
+â   â   âââ components/
+â   â   âââ pages/
+â   â   âââ services/
+â   â   âââ App.jsx
+â   â   âââ main.jsx
+â   âââ package.json
+â   âââ README.md
+â
+âââ shared/
+â   âââ api-contract.md   # API specification (agreed at Hour 0)
+â
+âââ README.md
+âââ .gitignore
+âââ .env.example
 ```
 
 ## Development Setup
@@ -261,7 +261,7 @@ hack/
 ### Prerequisites
 - Node.js (v18+)
 - MongoDB (local or MongoDB Atlas)
-- OpenAI API key (for Member 4's AI nudge)
+- Gemini API key (for Member 4's AI nudge; optional — rule-based fallback works offline)
 
 ### Backend Setup
 
@@ -292,13 +292,25 @@ Frontend runs on `http://localhost:5173`
 MONGODB_URI=mongodb://localhost:27017/resilience-engine
 PORT=5000
 NODE_ENV=development
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
 **Frontend (.env):**
 ```
 VITE_API_BASE_URL=http://localhost:5000/api
-VITE_OPENAI_API_KEY=your_openai_key_here
+VITE_NUDGE_URL=http://localhost:5000
 ```
+
+### Member 4 endpoints (same backend process)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/nudge` | AI / fallback nudge from dashboard facts |
+| POST | `/nudge/chat` | Coach chat reply |
+| GET | `/nudge/health` | Gemini key status |
+| POST | `/schemes/analyse` | Rank schemes + AI plan |
+| GET | `/demo/profiles` | Demo worker list |
 
 ## Hackathon Timeline
 
@@ -308,7 +320,7 @@ VITE_OPENAI_API_KEY=your_openai_key_here
 | **1-4** | Member 1: Backend skeleton, Member 2: Core formulas, Member 3: UI setup |
 | **4-6** | Member 1: Pipeline integration, Member 2: Scoring logic, Member 3: Dashboard |
 | **6-9** | Member 4: AI integration, Member 3: Polish UI, Member 2: Refine calculations |
-| **9-12** | **FEATURE FREEZE** → Integration testing only |
+| **9-12** | **FEATURE FREEZE** â Integration testing only |
 | **12-14** | Demo data, dry-run, bug fixes |
 | **14-15** | Final presentation prep, slides, demo script |
 
@@ -322,30 +334,30 @@ VITE_OPENAI_API_KEY=your_openai_key_here
 ## Hackathon Scope
 
 ### MUST HAVE (Core Pipeline)
-✅ Transaction input  
-✅ Income pattern analysis  
-✅ Savings pocket  
-✅ Resilience score  
-✅ Loan risk detection  
-✅ AI nudge  
+â Transaction input  
+â Income pattern analysis  
+â Savings pocket  
+â Resilience score  
+â Loan risk detection  
+â AI nudge  
 
 ### SHOULD HAVE (Differentiators)
-✅ Rainy-day fund tracker  
-✅ Government scheme matcher  
-✅ Score factor breakdown  
+â Rainy-day fund tracker  
+â Government scheme matcher  
+â Score factor breakdown  
 
 ### NICE TO HAVE (Polish)
-⚠️ Tamil language support  
-⚠️ Income prediction chart  
-⚠️ Savings streak gamification  
+â ï¸ Tamil language support  
+â ï¸ Income prediction chart  
+â ï¸ Savings streak gamification  
 
 ### OUT OF SCOPE
-❌ Real bank integrations  
-❌ JWT authentication  
-❌ Payment gateways  
-❌ Real Uber/Swiggy APIs  
-❌ Machine learning models  
-❌ Production deployment  
+â Real bank integrations  
+â JWT authentication  
+â Payment gateways  
+â Real Uber/Swiggy APIs  
+â Machine learning models  
+â Production deployment  
 
 ## Testing
 
@@ -380,5 +392,5 @@ MIT License (Hackathon Project)
 
 ---
 
-**Built with ❤️ by Team ALCHEMY**  
-VIT Chennai · September 2026
+**Built with â¤ï¸ by Team ALCHEMY**  
+VIT Chennai Â· September 2026

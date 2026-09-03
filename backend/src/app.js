@@ -9,6 +9,9 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const loanRoutes = require('./routes/loanRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const simulatorRoutes = require('./routes/simulatorRoutes');
+const nudgeRoutes = require('./routes/nudge');
+const schemesRoutes = require('./routes/schemes');
+const demoRoutes = require('./routes/demo');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorHandler');
@@ -35,13 +38,18 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// API Routes
+// API Routes (Member 1 pipeline)
 app.use('/api/profile', profileRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/simulator', simulatorRoutes);
+
+// Member 4 AI nudge / schemes / demo (paths match frontend Vite proxy)
+app.use('/nudge', nudgeRoutes);
+app.use('/schemes', schemesRoutes);
+app.use('/demo', demoRoutes);
 
 // Error handling middleware (must be last)
 app.use(notFound);

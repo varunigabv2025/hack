@@ -9,13 +9,13 @@ This is the core backend API that orchestrates the financial intelligence pipeli
 
 ```
 Transaction Input 
-    ↓
+    â
 Pipeline Orchestration (Member 1)
-    ↓
+    â
 Finance Engine Calculations (Member 2)
-    ↓
+    â
 Data Persistence (Member 1)
-    ↓
+    â
 Response with Financial Snapshot
 ```
 
@@ -23,42 +23,42 @@ Response with Financial Snapshot
 
 ```
 backend/
-├── src/
-│   ├── config/
-│   │   └── db.js                    # MongoDB connection
-│   │
-│   ├── controllers/
-│   │   ├── profileController.js     # User profile CRUD
-│   │   ├── transactionController.js # Transaction + pipeline trigger
-│   │   ├── dashboardController.js   # Dashboard data aggregation
-│   │   └── loanController.js        # Loan CRUD
-│   │
-│   ├── models/
-│   │   ├── User.js                  # User schema
-│   │   ├── Transaction.js           # Transaction schema
-│   │   ├── Loan.js                  # Loan schema
-│   │   └── FinancialProfile.js      # Financial snapshot schema
-│   │
-│   ├── routes/
-│   │   ├── profileRoutes.js         # /api/profile routes
-│   │   ├── transactionRoutes.js     # /api/transactions routes
-│   │   ├── dashboardRoutes.js       # /api/dashboard routes
-│   │   └── loanRoutes.js            # /api/loans routes
-│   │
-│   ├── services/
-│   │   ├── pipelineService.js       # Pipeline orchestration logic
-│   │   └── financeEngineAdapter.js  # Interface to Member 2's engine
-│   │
-│   ├── middleware/
-│   │   ├── errorHandler.js          # Global error handler
-│   │   └── notFound.js              # 404 handler
-│   │
-│   ├── app.js                       # Express app setup
-│   └── server.js                    # Server entry point
-│
-├── package.json
-├── .env.example
-└── README.md
+âââ src/
+â   âââ config/
+â   â   âââ db.js                    # MongoDB connection
+â   â
+â   âââ controllers/
+â   â   âââ profileController.js     # User profile CRUD
+â   â   âââ transactionController.js # Transaction + pipeline trigger
+â   â   âââ dashboardController.js   # Dashboard data aggregation
+â   â   âââ loanController.js        # Loan CRUD
+â   â
+â   âââ models/
+â   â   âââ User.js                  # User schema
+â   â   âââ Transaction.js           # Transaction schema
+â   â   âââ Loan.js                  # Loan schema
+â   â   âââ FinancialProfile.js      # Financial snapshot schema
+â   â
+â   âââ routes/
+â   â   âââ profileRoutes.js         # /api/profile routes
+â   â   âââ transactionRoutes.js     # /api/transactions routes
+â   â   âââ dashboardRoutes.js       # /api/dashboard routes
+â   â   âââ loanRoutes.js            # /api/loans routes
+â   â
+â   âââ services/
+â   â   âââ pipelineService.js       # Pipeline orchestration logic
+â   â   âââ financeEngineAdapter.js  # Interface to Member 2's engine
+â   â
+â   âââ middleware/
+â   â   âââ errorHandler.js          # Global error handler
+â   â   âââ notFound.js              # 404 handler
+â   â
+â   âââ app.js                       # Express app setup
+â   âââ server.js                    # Server entry point
+â
+âââ package.json
+âââ .env.example
+âââ README.md
 ```
 
 ## Setup Instructions
@@ -134,7 +134,7 @@ See full specification: [`../shared/api-contract.md`](../shared/api-contract.md)
 
 ## Member 1 Responsibilities
 
-### ✅ Completed
+### â Completed
 - [x] Express server setup
 - [x] MongoDB connection
 - [x] Mongoose models (User, Transaction, Loan, FinancialProfile)
@@ -142,7 +142,7 @@ See full specification: [`../shared/api-contract.md`](../shared/api-contract.md)
 - [x] Error handling middleware
 - [x] Health check endpoint
 
-### 🔄 In Progress
+### ð In Progress
 - [ ] Profile controller implementation
 - [ ] Transaction controller + pipeline trigger
 - [ ] Dashboard controller
@@ -150,7 +150,7 @@ See full specification: [`../shared/api-contract.md`](../shared/api-contract.md)
 - [ ] Pipeline service orchestration
 - [ ] Integration with Member 2's finance engine
 
-### 📋 Testing
+### ð Testing
 - [ ] Postman collection
 - [ ] All endpoints working
 - [ ] Error handling verified
@@ -390,6 +390,23 @@ Content-Type: application/json
 - Logging (Winston)
 - Production MongoDB (Atlas)
 - Deployment (Render/Railway/Heroku)
+
+## Member 4 — AI Nudge, Schemes & Demo
+
+Mounted on the same Express server:
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/nudge` | Generate nudge from facts or dashboard JSON |
+| POST | `/nudge/chat` | Gemini coach reply |
+| GET | `/nudge/health` | Gemini key present? |
+| POST | `/schemes/analyse` | Rank schemes + AI plan |
+| GET | `/schemes/health` | Scheme analyser health |
+| GET | `/demo/profiles` | List demo workers |
+| GET | `/demo/profiles/:id` | Full seed history |
+| GET | `/demo/preview/:id` | Preview fallback nudge |
+
+Set `GEMINI_API_KEY` in `.env` (optional). Without it, rule-based fallback always works.
 
 ---
 

@@ -12,6 +12,7 @@ connectDB()
       console.log(`🚀 Resilience Engine Backend running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+      console.log(`Gemini: ${process.env.GEMINI_API_KEY ? 'configured' : 'off (fallback only)'}`);
     });
   })
   .catch((error) => {
