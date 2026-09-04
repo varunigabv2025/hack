@@ -1,396 +1,654 @@
-# RESILIENCE ENGINE
+🛡️ Resilience Engine
 
-**Team ALCHEMY (Team 4) Â· VIT Chennai Hackathon**  
-*Sep 3, 12:00 PM â Sep 4, 2:00 PM | 24-hour build*
+Turning irregular income into measurable financial resilience.
 
-## Problem
+Resilience Engine is a fintech platform designed to help gig workers, freelancers, delivery partners, drivers, and other users with irregular income understand and improve their financial resilience.
 
-Gig workers and informal laborers face unique financial challenges due to irregular income patterns:
+Instead of looking only at how much a person earns, Resilience Engine analyzes their income patterns, savings behaviour, resilience, and loan exposure to provide meaningful financial insights and simple, actionable guidance.
 
-- **Unpredictable cash flow**: Income varies week-to-week, making traditional budgeting difficult
-- **Savings difficulty**: Hard to save consistently without steady paychecks
-- **Credit invisibility**: Lack formal employment records, making loans inaccessible or predatory
-- **Financial stress**: No emergency buffer leads to debt traps and high-cost borrowing
-- **Limited financial literacy**: Complex financial products are hard to navigate
+🎯 The Problem
 
-## Solution
+Traditional financial systems are often designed around people with:
 
-**Resilience Engine** converts irregular gig-worker income into measurable financial resilience through a 6-stage intelligence pipeline:
+Fixed monthly salaries
+Predictable income
+Stable employment
+Conventional credit histories
 
-```
-Transaction 
-    â
-Income Pattern Analyzer (baseline, volatility, trend, prediction)
-    â
-Predictive Savings Pocket (surplus detection, auto-suggest, streak tracking)
-    â
-Resilience Score (0-100 score with factor breakdown)
-    â
-Loan Risk Detection (stacking alerts, payment burden)
-    â
-AI Nudge (plain-language personalized guidance)
-```
+But gig workers and informal workers may experience significant income fluctuations.
 
-## Core Features
+For example:
 
-### 1. **Income Pattern Analyzer**
-Analyzes transaction history to compute:
-- Baseline income (median or smoothed average)
-- Volatility (income fluctuation)
-- Consistency score
-- Trend (improving/declining)
-- 7-day income prediction
+Monday       ₹900
+Tuesday      ₹1,400
+Wednesday    ₹650
+Thursday     ₹1,100
+Friday       ₹500
 
-### 2. **Predictive Savings Pocket**
-Detects surplus income and suggests savings:
-- Real-time surplus calculation
-- Savings suggestion (% of surplus)
-- Savings streak tracking
-- Rainy-day fund builder
+A simple monthly income figure does not capture the user's actual financial stability.
 
-### 3. **Resilience Score (0-100)**
-Holistic financial health metric based on:
-- Income stability
-- Savings behavior
-- Debt burden
-- Emergency buffer
-- Score change tracking
+Resilience Engine asks:
+How stable is the user's income?
+Is their income increasing or decreasing?
+How much can they safely save?
+How financially resilient are they?
+Is there potential loan-stacking risk?
+What simple financial action could help them?
+💡 Our Solution
 
-### 4. **Loan Stacking Risk**
-Alerts users to dangerous borrowing patterns:
-- Multiple active loan detection
-- Payment-to-income ratio
-- Risk level: low/medium/high
+Resilience Engine converts everyday income activity into understandable financial intelligence.
 
-### 5. **AI Nudge**
-Plain-language financial guidance:
-- Personalized to user's situation
-- Explains score changes
-- Suggests actionable improvements
-- English/Tamil support (if implemented)
+Income
+  ↓
+Income Pattern Analysis
+  ↓
+Savings Intelligence
+  ↓
+Resilience Score
+  ↓
+Loan Risk Analysis
+  ↓
+AI Financial Nudge
+  ↓
+Personalized Dashboard
 
-### 6. **Rainy-Day Fund**
-Emergency buffer tracker:
-- Target: 1 month of baseline expenses
-- Progress visualization
-- Motivational milestones
+The platform combines a modern web interface, secure authentication, persistent data storage, financial processing, and AI-assisted guidance.
 
-## Differentiators
+✨ Key Features
+🔐 Real Authentication
 
-### 7. **Government Scheme Discovery**
-Matches users to relevant Indian schemes:
-- **PM-SYM** (Pension for unorganized workers)
-- **e-Shram** (Unorganized worker registration)
-- **PMJJBY** (Life insurance)
-- **PMSBY** (Accident insurance)
-- **PM Vishwakarma** (Artisan support)
-- State-specific worker benefits
+Secure user authentication with:
 
-Based on user profile: age, income, occupation, state
+User registration
+Login and logout
+Password hashing
+JWT authentication
+HTTP-only cookies
+Protected routes
+User authorization
+User-specific data
+💰 Income Tracking
 
-### 8. **Language Support**
-- English
-- Tamil (optional, if time permits)
+Users can record their income with:
 
-## Technology Stack
+Income amount
+Income source
+Date
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React + Vite, Tailwind CSS |
-| **Backend** | Node.js, Express |
-| **Database** | MongoDB, Mongoose |
-| **AI** | Google Gemini (with offline rule-based fallback) |
-| **Charts** | Recharts |
-| **Testing** | Postman |
-| **Version Control** | GitHub |
+Supported sources include options such as:
 
-## Team Structure
+Uber
+Swiggy
+Ola
+Zomato
+Cash
+Other
 
-| Member | Responsibility |
-|--------|---------------|
-| **Member 1** | Backend, Database & Core Pipeline |
-| **Member 2** | Financial Intelligence & Scoring |
-| **Member 3** | Frontend & User Dashboard |
-| **Member 4** | AI Nudge, Integration & Demo |
+The application checks whether income has already been recorded for the current day.
 
-### Member 1: Backend, Database & Core Pipeline
-- Express server setup
-- MongoDB connection
-- Mongoose models (User, Transaction, Loan, FinancialProfile)
-- API routes (profile, transactions, loans, dashboard)
-- Pipeline orchestration (POST /api/transactions â full pipeline)
-- Error handling
-- Integration with Member 2's finance engine
+Login
+  ↓
+Check today's income
+  ↓
+ ┌───────────────┐
+ │ Income exists?│
+ └───────┬───────┘
+       Yes   No
+        ↓     ↓
+    Dashboard  Income Setup
 
-### Member 2: Financial Intelligence & Scoring
-- Income pattern analyzer (baseline, volatility, trend, prediction)
-- Predictive savings pocket (surplus, suggestions, streak, rainy-day)
-- Resilience score engine (weighted factors, 0-100 score)
-- Loan risk calculator
-- Pure functions that return calculated values (no DB access)
+This prevents unnecessary duplicate daily income entry.
 
-### Member 3: Frontend & User Dashboard
-- React + Vite + Tailwind setup
-- Onboarding flow
-- Dashboard (income chart, score card, savings, loans)
-- Savings pocket UI
-- Resilience score detail view
-- Loan risk warnings
-- Government scheme cards
-- Responsive design
+📊 Income Intelligence
 
-### Member 4: AI Nudge, Integration & Demo
-- Gemini integration (nudge generation + chat coach)
-- Government scheme matcher
-- End-to-end integration testing
-- Demo data seeding (3-4 realistic personas)
-- Presentation deck
-- Demo script and dry-run
+The platform analyzes income history to understand financial patterns.
 
-## Architecture
+Key indicators include:
 
-### System Flow
+Income baseline
+Income volatility
+Income consistency
+Income trend
+Recent income behaviour
+Income History
+      ↓
+Income Analysis
+      ↓
+┌──────────┬───────────┬───────────┐
+│ Baseline │ Volatility│   Trend   │
+└──────────┴───────────┴───────────┘
+🏦 Savings Pocket
 
-```
-âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-â                     FRONTEND (React + Vite)                  â
-â  Dashboard | Savings | Score | Loans | Schemes | AI Nudge    â
-âââââââââââââââââââââââââââ¬ââââââââââââââââââââââââââââââââââââ
-                          â REST API (JSON)
-                          â
-âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-â                   BACKEND (Node.js + Express)                â
-â                                                              â
-â  ââââââââââââââââ    ââââââââââââââââ    ââââââââââââââââ  â
-â  â  Controllers ââââââ   Services   ââââââ    Models    â  â
-â  â  (Routes)    â    â  (Pipeline)  â    â  (Mongoose)  â  â
-â  ââââââââââââââââ    ââââââââ¬ââââââââ    ââââââââââââââââ  â
-â                              â                               â
-â                              â                               â
-â                    ââââââââââââââââââââ                     â
-â                    â Finance Engine   â â Member 2          â
-â                    â (Calculations)   â                     â
-â                    ââââââââââââââââââââ                     â
-âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-                          â
-                          â
-                   ââââââââââââââââ
-                   â   MongoDB    â
-                   ââââââââââââââââ
-```
+The platform provides savings intelligence based on the user's financial situation.
 
-### Data Flow (POST /api/transactions)
+It considers factors such as:
 
-1. **Request**: Transaction data (user_id, amount, date, source)
-2. **Persist**: Save transaction to MongoDB
-3. **Analyze**: Member 2's finance engine calculates:
-   - Income profile
-   - Savings pocket
-   - Resilience score
-   - Loan risk
-4. **Store**: Save FinancialProfile to MongoDB
-5. **Respond**: Return complete financial snapshot + nudge_context
-6. **Frontend**: Member 4's AI calls Gemini to generate nudge (falls back offline)
+Safe-to-save amount
+Savings behaviour
+Savings streak
+Available surplus
 
-## API Contract
+The objective is to encourage users to gradually build a financial buffer rather than assuming they can save a fixed amount every day.
 
-See detailed specification: [`shared/api-contract.md`](./shared/api-contract.md)
+📈 Resilience Score
 
-### Key Endpoint: POST /api/transactions
+Resilience Engine provides a simple 0–100 Resilience Score.
 
-**Request:**
-```json
-{
-  "user_id": "U001",
-  "amount": 1100,
-  "date": "2026-09-03",
-  "source": "Uber"
-}
-```
+The score reflects financial factors such as:
 
-**Response:**
-```json
-{
-  "success": true,
-  "income_profile": { "baseline": 800, "volatility": "medium", "trend": "increasing", "prediction": {} },
-  "savings_pocket": { "surplus": 300, "suggested_amount": 120, "streak": 4, "rainy_day": {} },
-  "resilience_score": { "score": 72, "score_change": 5, "factors": {} },
-  "loan_risk": { "level": "low", "active_loans": 0 },
-  "nudge_context": {}
-}
-```
+Income stability
+Income trend
+Savings behaviour
+Income Stability
+       +
+Income Trend
+       +
+Savings Behaviour
+       ↓
+Resilience Score
+     0 – 100
 
-## Project Structure
+This gives users an easy way to understand their overall financial resilience.
 
-```
+⚠️ Loan Risk Analysis
+
+Users may rely on multiple loans during periods of irregular income.
+
+Resilience Engine includes loan-risk analysis based on active loan behaviour and potential loan-stacking exposure.
+
+This provides another dimension of financial awareness beyond income alone.
+
+🤖 AI Financial Nudges
+
+AI is used to transform financial information into simple, understandable guidance.
+
+The architecture separates financial calculations from AI-generated explanations:
+
+User Data
+   ↓
+Backend Financial Engine
+   ↓
+Financial Facts
+   ↓
+Minimal AI Context
+   ↓
+AI
+   ↓
+Plain-Language Nudge
+
+The backend remains responsible for core financial calculations.
+
+AI helps communicate those results in a way that is easier for users to understand.
+
+📊 Financial Dashboard
+
+The dashboard brings the user's financial information together in one place.
+
+It can display:
+
+Today's income
+Income baseline
+Income trend
+Income history
+Savings information
+Savings streak
+Resilience Score
+Loan risk
+AI financial nudges
+Recent financial activity
+🌍 Language & Currency Support
+
+The application includes user-facing support for:
+
+Language selection
+Currency selection
+Localized financial display
+
+Financial values remain numeric internally while formatting is handled at the presentation layer.
+
+🔄 Complete User Journey
+                    ┌───────────────┐
+                    │    Landing    │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │ Register/Login│
+                    └───────┬───────┘
+                            ↓
+                 ┌─────────────────────┐
+                 │ Check Today's Income│
+                 └──────────┬──────────┘
+                            ↓
+                     ┌──────┴──────┐
+                     │             │
+                    Yes            No
+                     │             │
+                     ↓             ↓
+                 Dashboard    Income Setup
+                                   ↓
+                            Record Income
+                                   ↓
+                              MongoDB
+                                   ↓
+                           Finance Engine
+                                   ↓
+                 ┌─────────────────┼─────────────────┐
+                 ↓                 ↓                 ↓
+          Income Analysis      Savings          Loan Risk
+                 │                 │                 │
+                 └─────────────────┼─────────────────┘
+                                   ↓
+                            Resilience Score
+                                   ↓
+                               AI Nudge
+                                   ↓
+                              Dashboard
+🧠 Financial Processing Pipeline
+Transaction
+     ↓
+Validation
+     ↓
+Persistence
+     ↓
+Transaction History
+     ↓
+Income Analysis
+     ↓
+Savings Calculation
+     ↓
+Resilience Score
+     ↓
+Loan Risk
+     ↓
+AI Nudge Context
+     ↓
+Financial Nudge
+     ↓
+Dashboard
+🏗️ System Architecture
+┌─────────────────────────────────────────────┐
+│                  FRONTEND                   │
+│                                             │
+│ React + Vite + Tailwind CSS + Recharts      │
+│                                             │
+│ Login → Income → Dashboard → Insights      │
+└──────────────────────┬──────────────────────┘
+                       │
+                       │ REST API
+                       ↓
+┌─────────────────────────────────────────────┐
+│                  BACKEND                    │
+│                                             │
+│ Node.js + Express                           │
+│                                             │
+│ Authentication                              │
+│ Authorization                               │
+│ Controllers                                 │
+│ Services                                    │
+│ Financial Pipeline                          │
+└───────────────┬─────────────────┬───────────┘
+                │                 │
+                ↓                 ↓
+       ┌────────────────┐  ┌────────────────┐
+       │    MongoDB     │  │   AI Service   │
+       │                │  │                │
+       │ Users          │  │ Financial      │
+       │ Transactions   │  │ Nudges         │
+       │ Loans          │  │                │
+       │ Profiles       │  │ Derived Facts  │
+       └────────────────┘  └────────────────┘
+🛠️ Technology Stack
+Category	Technologies
+Frontend	React, Vite
+Styling	Tailwind CSS
+Routing	React Router
+Animations	Framer Motion
+Charts	Recharts
+Icons	Lucide React
+Backend	Node.js, Express.js
+Database	MongoDB, MongoDB Atlas
+ODM	Mongoose
+Authentication	JWT, HTTP-only Cookies
+Password Security	bcrypt / bcryptjs
+AI	OpenAI API
+Testing	Postman, Browser DevTools
+Version Control	Git, GitHub
+📁 Project Structure
 hack/
-âââ backend/              # Member 1: Node.js + Express + MongoDB
-â   âââ src/
-â   â   âââ config/       # Database connection
-â   â   âââ controllers/  # Route handlers
-â   â   âââ models/       # Mongoose schemas
-â   â   âââ routes/       # API routes
-â   â   âââ services/     # Business logic + pipeline
-â   â   âââ middleware/   # Error handling
-â   â   âââ app.js
-â   â   âââ server.js
-â   âââ package.json
-â   âââ .env.example
-â   âââ README.md
-â
-âââ frontend/             # Member 3: React + Vite + Tailwind
-â   âââ src/
-â   â   âââ components/
-â   â   âââ pages/
-â   â   âââ services/
-â   â   âââ App.jsx
-â   â   âââ main.jsx
-â   âââ package.json
-â   âââ README.md
-â
-âââ shared/
-â   âââ api-contract.md   # API specification (agreed at Hour 0)
-â
-âââ README.md
-âââ .gitignore
-âââ .env.example
-```
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── ...
+│   ├── package.json
+│   └── ...
+│
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── ...
+│   ├── package.json
+│   └── ...
+│
+└── README.md
+🔑 Authentication
+Registration
+Registration Form
+       ↓
+POST /api/auth/register
+       ↓
+Validate User
+       ↓
+Hash Password
+       ↓
+Create User
+       ↓
+JWT Authentication
+       ↓
+HTTP-only Cookie
+       ↓
+Authenticated Session
+Login
+Login Form
+    ↓
+POST /api/auth/login
+    ↓
+Verify Credentials
+    ↓
+Generate JWT
+    ↓
+HTTP-only Cookie
+    ↓
+Protected Application
+Logout
+Logout
+  ↓
+POST /api/auth/logout
+  ↓
+Clear Authentication
+  ↓
+Login Page
+🔒 Security
 
-## Development Setup
+Resilience Engine handles financial information, so security is an important part of the architecture.
 
-### Prerequisites
-- Node.js (v18+)
-- MongoDB (local or MongoDB Atlas)
-- Gemini API key (for Member 4's AI nudge; optional — rule-based fallback works offline)
+Implemented
+Password hashing
+JWT authentication
+HTTP-only cookies
+Protected frontend routes
+Backend authentication middleware
+User authorization
+User-specific data access
+Server-side database access
+Environment variables for secrets
+Separation of financial calculations and AI-generated explanations
+Sensitive information
 
-### Backend Setup
+The application should never request or store highly sensitive credentials such as:
 
-```bash
+UPI PIN
+ATM PIN
+CVV
+Banking passwords
+Card PINs
+Production Considerations
+
+This is a hackathon/MVP implementation. A production financial platform would additionally require measures such as:
+
+HTTPS everywhere
+Rate limiting
+Password recovery
+Email verification
+Multi-factor authentication
+Security monitoring
+Audit logging
+Encryption and key management
+Database backup and recovery systems
+🔌 API Reference
+Authentication
+Method	Endpoint	Description
+POST	/api/auth/register	Register a new user
+POST	/api/auth/login	Authenticate a user
+POST	/api/auth/logout	Log out the current user
+GET	/api/auth/me	Retrieve authenticated user
+Profile
+Method	Endpoint	Description
+POST	/api/profile	Create/update profile
+GET	/api/profile/:userId	Retrieve profile
+Transactions
+Method	Endpoint	Description
+POST	/api/transactions	Record an income transaction
+GET	/api/transactions/:userId	Retrieve transaction history
+Loans
+Method	Endpoint	Description
+POST	/api/loans	Record a loan
+GET	/api/loans/:userId	Retrieve user loans
+Dashboard
+Method	Endpoint	Description
+GET	/api/dashboard/:userId	Retrieve financial dashboard data
+Health
+Method	Endpoint	Description
+GET	/api/health	Check backend availability
+🗄️ Data Persistence
+
+MongoDB is used to persist application data.
+
+The backend uses Mongoose for database interaction.
+
+Core entities include:
+
+User
+  │
+  ├── Transactions
+  │
+  ├── Loans
+  │
+  └── Financial Profile
+
+Transaction processing follows:
+
+Frontend
+   ↓
+REST API
+   ↓
+Express
+   ↓
+Validation
+   ↓
+MongoDB
+   ↓
+Financial Pipeline
+   ↓
+Dashboard
+🚀 Getting Started
+Prerequisites
+
+Make sure the following are installed:
+
+Node.js
+npm
+MongoDB Atlas account or MongoDB instance
+Git
+1. Clone the Repository
+git clone https://github.com/varunigabv2025/hack.git
+cd hack
+2. Backend Setup
 cd backend
 npm install
-cp .env.example .env
-# Edit .env with your MongoDB URI and port
+
+Create a .env file inside the backend directory:
+
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_secure_jwt_secret
+OPENAI_API_KEY=your_openai_api_key
+
+Never commit .env or real credentials to GitHub.
+
+Start the backend:
+
 npm run dev
-```
+3. Frontend Setup
 
-Backend runs on `http://localhost:5000`
+Open another terminal:
 
-### Frontend Setup
-
-```bash
 cd frontend
 npm install
+
+Create the frontend environment file:
+
+VITE_API_URL=http://localhost:5000/api
+
+Start the frontend:
+
 npm run dev
-```
 
-Frontend runs on `http://localhost:5173`
+Open the local Vite URL shown in the terminal.
 
-### Environment Variables
+🧪 Testing
 
-**Backend (.env):**
-```
-MONGODB_URI=mongodb://localhost:27017/resilience-engine
-PORT=5000
-NODE_ENV=development
-GEMINI_API_KEY=
-GEMINI_MODEL=gemini-3.6-flash
-```
+The project includes testing and verification across important application flows.
 
-**Frontend (.env):**
-```
-VITE_API_BASE_URL=http://localhost:5000/api
-VITE_NUDGE_URL=http://localhost:5000
-```
+Areas verified include:
 
-### Member 4 endpoints (same backend process)
+User registration
+User login
+Authentication
+Logout
+Protected routes
+User isolation
+Income onboarding
+Daily income checking
+Transaction persistence
+Dashboard data
+Financial calculations
+Savings
+Resilience scoring
+Loan risk
+AI nudges
+Page refresh persistence
+Direct navigation
+Currency handling
+Language handling
+Responsive UI
+📌 Example Financial Flow
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| POST | `/nudge` | AI / fallback nudge from dashboard facts |
-| POST | `/nudge/chat` | Coach chat reply |
-| GET | `/nudge/health` | Gemini key status |
-| POST | `/schemes/analyse` | Rank schemes + AI plan |
-| GET | `/demo/profiles` | Demo worker list |
+Consider a user whose daily income is:
 
-## Hackathon Timeline
+₹900
+₹1,200
+₹650
+₹1,100
+₹800
+₹1,400
+₹700
 
-| Hour | Focus |
-|------|-------|
-| **0-1** | API contract agreement, setup, initial commits |
-| **1-4** | Member 1: Backend skeleton, Member 2: Core formulas, Member 3: UI setup |
-| **4-6** | Member 1: Pipeline integration, Member 2: Scoring logic, Member 3: Dashboard |
-| **6-9** | Member 4: AI integration, Member 3: Polish UI, Member 2: Refine calculations |
-| **9-12** | **FEATURE FREEZE** â Integration testing only |
-| **12-14** | Demo data, dry-run, bug fixes |
-| **14-15** | Final presentation prep, slides, demo script |
+Instead of simply calculating total earnings, Resilience Engine looks at the pattern.
 
-### Critical Sync Points
-- **Hour 0**: API contract agreement (all members)
-- **Hour 3**: Backend + Finance engine integration check
-- **Hour 6**: Frontend + Backend integration check
-- **Hour 9**: FEATURE FREEZE (no new logic after this)
-- **Hour 12**: Full integration dry-run
+Income History
+      ↓
+Baseline
+      ↓
+Volatility & Consistency
+      ↓
+Income Trend
+      ↓
+Savings Intelligence
+      ↓
+Resilience Score
+      ↓
+Loan Risk
+      ↓
+Personalized Nudge
 
-## Hackathon Scope
+This creates a broader picture of financial resilience.
 
-### MUST HAVE (Core Pipeline)
-â Transaction input  
-â Income pattern analysis  
-â Savings pocket  
-â Resilience score  
-â Loan risk detection  
-â AI nudge  
+🌱 Future Enhancements
 
-### SHOULD HAVE (Differentiators)
-â Rainy-day fund tracker  
-â Government scheme matcher  
-â Score factor breakdown  
+Potential future improvements include:
 
-### NICE TO HAVE (Polish)
-â ï¸ Tamil language support  
-â ï¸ Income prediction chart  
-â ï¸ Savings streak gamification  
+Bank statement integration
+Automated transaction import
+OCR-based financial document processing
+Expense categorization
+Password reset
+Email verification
+Two-factor authentication
+Push notifications
+Advanced financial analytics
+Mobile application
+More personalized financial planning
+🏆 Why Resilience Engine?
 
-### OUT OF SCOPE
-â Real bank integrations  
-â JWT authentication  
-â Payment gateways  
-â Real Uber/Swiggy APIs  
-â Machine learning models  
-â Production deployment  
+Resilience Engine focuses on a financial problem that conventional systems can overlook: income instability.
 
-## Testing
+The project combines:
 
-- **Backend**: Postman collection (Member 1)
-- **Finance Engine**: Unit tests for calculations (Member 2)
-- **Frontend**: Manual browser testing (Member 3)
-- **Integration**: End-to-end demo scenarios (Member 4)
+Financial Intelligence
 
-## Demo Strategy
+Understanding income patterns instead of looking only at total earnings.
 
-Member 4 will create 3 realistic personas:
+Predictive Savings
 
-1. **High Resilience**: Uber driver, consistent income, good savings, no loans
-2. **Medium Resilience**: Swiggy rider, fluctuating income, some savings, 1 loan
-3. **At Risk**: Gig worker, erratic income, no savings, multiple loans
+Helping users build financial buffers according to their income situation.
 
-Each persona demonstrates the full pipeline and differentiators.
+Resilience Measurement
 
-## Judging Criteria Alignment
+Converting financial behaviour into an understandable 0–100 score.
 
-| Criterion | Our Approach |
-|-----------|-------------|
-| **Technical Implementation** | Full-stack working prototype, clean architecture, real calculations |
-| **Innovation** | Resilience score for gig workers, predictive savings, government scheme integration |
-| **Feasibility** | Uses existing rails (TReDS concept), no new infrastructure needed |
-| **Sustainability** | Can be revenue-neutral (data broker model), scales with digital payments |
-| **Social Impact** | Financial inclusion for 450M+ informal workers in India |
+Risk Awareness
 
-## License
+Highlighting potential loan-stacking exposure.
 
-MIT License (Hackathon Project)
+AI Assistance
 
----
+Turning financial facts into simple, human-readable guidance.
 
-**Built with â¤ï¸ by Team ALCHEMY**  
-VIT Chennai Â· September 2026
+Secure Architecture
+
+Using backend authentication, authorization, password hashing, and persistent user-specific data.
+
+👥 Team
+
+Resilience Engine is a collaborative hackathon project.
+
+Contributions
+Member 1 — Backend, database integration, core pipeline, authentication, income onboarding
+Member 2 — Financial calculation engine
+Member 3 — Dashboard and frontend experience
+Member 4 — AI nudges, government schemes, demo/presentation integration
+<img width="944" height="497" alt="image" src="https://github.com/user-attachments/assets/544c305c-ea2a-4945-b641-34846bcd4fb7" />
+<img width="950" height="494" alt="image" src="https://github.com/user-attachments/assets/0e2772ba-7228-400a-ad78-b9c1c6fcbb94" />
+<img width="945" height="497" alt="image" src="https://github.com/user-attachments/assets/7142f70a-84f3-4b9a-8145-55e908ad5d43" />
+<img width="940" height="497" alt="image" src="https://github.com/user-attachments/assets/419e7418-61a9-4243-b168-ac78aba147b7" />
+<img width="954" height="500" alt="image" src="https://github.com/user-attachments/assets/def67aaa-0b1c-4ad0-bf42-e9c06045dc3f" />
+<img width="944" height="508" alt="image" src="https://github.com/user-attachments/assets/ee39db24-a919-4135-8aeb-b4f21c8c5860" />
+<img width="958" height="502" alt="image" src="https://github.com/user-attachments/assets/e3c2dcc7-74a7-4c7c-a7d0-3419f9a3192c" />
+<img width="956" height="500" alt="image" src="https://github.com/user-attachments/assets/936684b3-1437-4131-9eb7-9a354af046d0" />
+<img width="956" height="503" alt="image" src="https://github.com/user-attachments/assets/d79038e7-911c-4b95-840c-fd4677cdebb6" />
+
+
+
+
+
+
+🔮 Vision
+
+Financial resilience should not depend on having a fixed salary.
+
+Resilience Engine aims to make financial intelligence more accessible to people whose income does not follow traditional patterns.
+
+By combining income intelligence, savings behaviour, resilience measurement, risk awareness, and understandable guidance, the platform helps users move from simply tracking income to understanding their financial resilience.
+
+📄 License
+
+This project is developed as a hackathon project.
+
+If a formal open-source license is added to the repository, this section should be updated accordingly.
