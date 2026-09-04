@@ -75,6 +75,14 @@ const getProfile = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
+    // AUTHORIZATION: Ensure user can only access their own profile
+    if (req.user.user_id !== userId) {
+      const error = new Error('Unauthorized: You can only access your own profile');
+      error.statusCode = 403;
+      error.code = 'FORBIDDEN';
+      throw error;
+    }
+
     const user = await User.findOne({ user_id: userId });
 
     if (!user) {

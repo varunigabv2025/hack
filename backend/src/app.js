@@ -1,8 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
 // Import routes
+const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
@@ -22,9 +24,13 @@ const { notFound } = require('./middleware/notFound');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // Frontend URL
+  credentials: true // Allow cookies
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Logging (only in development)
 if (process.env.NODE_ENV === 'development') {
@@ -41,6 +47,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes (Member 1 pipeline)
+app.use('/api/auth', authRoutes); // Authentication routes
 app.use('/api/profile', profileRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/dashboard', dashboardRoutes);

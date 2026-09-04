@@ -15,11 +15,18 @@ function delay(ms = 400) {
 async function request(base, path, options = {}) {
   const res = await fetch(`${base}${path}`, {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    credentials: 'include', // Include cookies for authentication
     ...options,
   })
   if (!res.ok) {
     const err = new Error(`Request failed (${res.status})`)
     err.status = res.status
+    try {
+      const data = await res.json()
+      err.message = data.message || err.message
+    } catch (e) {
+      // Response not JSON, use default error message
+    }
     throw err
   }
   return res.json()
@@ -74,6 +81,41 @@ export async function getTransactions() {
     return getMockDashboard().transactions || []
   }
   return request(API_URL, `/transactions/${userId}`)
+}
+
+/**
+ * Check if the authenticated user has entered income for today
+ * @returns {Promise<boolean>} true if today's income exists
+ */
+export async function hasTodaysIncome() {
+  try {
+    const userId = getUserId()
+    if (!userId) {
+      return false
+    }
+    
+    // Get user's transactions
+    const response = await getTransactions()
+    const transactions = response.transactions || response || []
+    
+    // Get today's date in ISO format (YYYY-MM-DD)
+    const today = new Date()
+    const todayStr = today.toISOString().split('T')[0] // e.g., "2026-09-04"
+    
+    // Check if any transaction matches today's date
+    const hasTodayTransaction = transactions.some(txn => {
+      if (!txn.date) return false
+      
+      // Handle ISO date with time: "2026-09-04T00:00:00.000Z"
+      const txnDateStr = new Date(txn.date).toISOString().split('T')[0]
+      return txnDateStr === todayStr
+    })
+    
+    return hasTodayTransaction
+  } catch (error) {
+    console.error('Error checking today\'s income:', error)
+    return false // On error, assume no income (will show income setup)
+  }
 }
 
 export async function resetDemo() {
