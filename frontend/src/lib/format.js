@@ -33,8 +33,12 @@ export function formatSigned(value) {
 
 export function formatDay(iso) {
   if (!iso) return '—'
-  const d = new Date(`${iso}T00:00:00`)
-  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+  // Handle ISO dates with or without time component
+  // Backend returns: "2026-09-07T00:00:00.000Z"
+  // User input: "2026-09-07"
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' })
 }
 
 export function greetingForNow(date = new Date()) {

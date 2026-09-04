@@ -1,5 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppProvider } from './context/AppContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Savings from './pages/Savings'
 import ResilienceScorePage from './pages/ResilienceScorePage'
@@ -12,25 +14,33 @@ import Schemes from './pages/Schemes'
 import AiLab from './pages/AiLab'
 import Loans from './pages/Loans'
 import Expenses from './pages/Expenses'
+import IncomeSetup from './pages/IncomeSetup'
 
 export default function App() {
   return (
     <AppProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/savings" element={<Savings />} />
-          <Route path="/score" element={<ResilienceScorePage />} />
-          <Route path="/transactions" element={<Transactions />} />
+          {/* Public route */}
+          <Route path="/login" element={<Login />} />
+          
+          {/* Protected routes */}
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/income-setup" element={<ProtectedRoute><IncomeSetup /></ProtectedRoute>} />
+          <Route path="/savings" element={<ProtectedRoute><Savings /></ProtectedRoute>} />
+          <Route path="/score" element={<ProtectedRoute><ResilienceScorePage /></ProtectedRoute>} />
+          <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
           <Route path="/activity" element={<Navigate to="/transactions" replace />} />
-          <Route path="/insights" element={<Insights />} />
-          <Route path="/schemes" element={<Schemes />} />
-          <Route path="/lab" element={<AiLab />} />
-          <Route path="/loans" element={<Loans />} />
-          <Route path="/expenses" element={<Expenses />} />
-          <Route path="/goals" element={<Goals />} />
-          <Route path="/network" element={<GlobalNetwork />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
+          <Route path="/schemes" element={<ProtectedRoute><Schemes /></ProtectedRoute>} />
+          <Route path="/lab" element={<ProtectedRoute><AiLab /></ProtectedRoute>} />
+          <Route path="/loans" element={<ProtectedRoute><Loans /></ProtectedRoute>} />
+          <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
+          <Route path="/goals" element={<ProtectedRoute><Goals /></ProtectedRoute>} />
+          <Route path="/network" element={<ProtectedRoute><GlobalNetwork /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          
+          {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

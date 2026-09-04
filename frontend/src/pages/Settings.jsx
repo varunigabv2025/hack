@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Settings as SettingsIcon, Globe2, Database, RefreshCw } from 'lucide-react'
+import { Settings as SettingsIcon, Globe2, Database, RefreshCw, LogOut } from 'lucide-react'
 import AppLayout from '../components/AppLayout'
 import { useApp } from '../context/AppContext'
+import { logout, getUserName } from '../utils/auth'
 
 const OCCUPATIONS = ['Uber', 'Ola', 'Swiggy', 'Zomato', 'Rapido', 'Dunzo']
 const STATES = ['Tamil Nadu', 'Karnataka', 'Telangana', 'Maharashtra', 'Rajasthan', 'Delhi', 'Kerala']
@@ -32,10 +34,19 @@ function Toggle({ enabled, onToggle, label }) {
 }
 
 export default function Settings() {
+  const navigate = useNavigate()
   const { live, currency, setCurrency, reset, data, updateProfile } = useApp()
   const user = data?.user || {}
   const settings = data?.settings || {}
   const [showReset, setShowReset] = useState(false)
+  const [showLogout, setShowLogout] = useState(false)
+  
+  const authenticatedUserName = getUserName()
+  
+  function handleLogout() {
+    logout()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <AppLayout>
@@ -268,6 +279,52 @@ export default function Settings() {
             )}
           </motion.section>
         )}
+        
+        {/* Logout section */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="card space-y-4"
+        >
+          <h3 className="text-sm font-bold uppercase tracking-wide text-muted">Account</h3>
+          {authenticatedUserName && (
+            <p className="text-sm text-muted">
+              Logged in as: <span className="font-semibold text-burgundy">{authenticatedUserName}</span>
+            </p>
+          )}
+          <p className="text-sm text-muted">
+            Sign out of your account. You'll need to log in again to access the dashboard.
+          </p>
+          {showLogout ? (
+            <div className="flex gap-3">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleLogout}
+                className="flex items-center gap-2 rounded-xl bg-rose px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-rose/20 transition-all hover:bg-rose/90"
+              >
+                <LogOut className="h-4 w-4" /> Confirm logout
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                onClick={() => setShowLogout(false)}
+                className="btn-secondary text-sm"
+              >
+                Cancel
+              </motion.button>
+            </div>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowLogout(true)}
+              className="btn-secondary flex items-center gap-2 text-sm"
+            >
+              <LogOut className="h-4 w-4" /> Logout
+            </motion.button>
+          )}
+        </motion.section>
       </motion.div>
     </AppLayout>
   )

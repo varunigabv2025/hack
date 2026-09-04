@@ -1,10 +1,12 @@
 import { applyMockTransaction, getMockDashboard, resetMockDashboard } from '../data/mockData'
 import { factsFromDashboard, generateFallbackNudge } from '../lib/nudgeFallback'
 import { analyseSchemes } from '../lib/schemeAnalysis'
+import { getUserId } from '../utils/auth'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 // Empty = same-origin (Vite proxies /nudge and /schemes to Member 4 backend)
 const NUDGE_URL = import.meta.env.VITE_NUDGE_URL ?? API_URL ?? ''
+
 
 function delay(ms = 400) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -28,30 +30,50 @@ export function isLiveApi() {
 }
 
 export async function getDashboard() {
+  const userId = getUserId()
+  if (!userId) {
+    throw new Error('User not authenticated. Please log in.')
+  }
+  
   if (!API_URL) {
     await delay()
     return getMockDashboard()
   }
-  return request(API_URL, '/dashboard')
+  return request(API_URL, `/dashboard/${userId}`)
 }
 
 export async function addTransaction(transaction) {
+  const userId = getUserId()
+  if (!userId) {
+    throw new Error('User not authenticated. Please log in.')
+  }
+  
   if (!API_URL) {
     await delay(520)
     return applyMockTransaction(transaction)
   }
+  // Ensure transaction has user_id from authenticated user
+  const payload = {
+    user_id: userId,
+    ...transaction
+  }
   return request(API_URL, '/transactions', {
     method: 'POST',
-    body: JSON.stringify(transaction),
+    body: JSON.stringify(payload),
   })
 }
 
 export async function getTransactions() {
+  const userId = getUserId()
+  if (!userId) {
+    throw new Error('User not authenticated. Please log in.')
+  }
+  
   if (!API_URL) {
     await delay(200)
     return getMockDashboard().transactions || []
   }
-  return request(API_URL, '/transactions')
+  return request(API_URL, `/transactions/${userId}`)
 }
 
 export async function resetDemo() {
