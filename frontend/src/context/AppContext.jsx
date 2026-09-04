@@ -4,6 +4,7 @@ import {
   contributeGoal,
   createGoal,
   deleteGoal,
+  depositToPocket as depositToPocketApi,
   fetchNudge,
   getDashboard,
   isLiveApi,
@@ -121,6 +122,13 @@ export function AppProvider({ children }) {
     await refresh()
   }, [live, refresh])
 
+  const depositToPocket = useCallback(async (amount) => {
+    const payload = normalizeDashboard(await depositToPocketApi(amount))
+    setData(payload)
+    setStatus('ready')
+    return payload
+  }, [])
+
   const updateProfile = useCallback((patch) => {
     setData((prev) => {
       if (!prev) return prev
@@ -153,6 +161,7 @@ export function AppProvider({ children }) {
       addGoal,
       contributeToGoal,
       removeGoal,
+      depositToPocket,
     }),
     [
       data,
@@ -171,6 +180,7 @@ export function AppProvider({ children }) {
       addGoal,
       contributeToGoal,
       removeGoal,
+      depositToPocket,
     ],
   )
 
