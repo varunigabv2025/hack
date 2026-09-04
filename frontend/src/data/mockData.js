@@ -420,9 +420,35 @@ function applyStoredProfile(dashboard) {
   try {
     const stored = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null')
     if (!stored) return dashboard
+    
+    // CRITICAL FIX: Only apply stored settings, NOT user identity
+    // Backend user data (name, email, user_id) must never be overridden by localStorage
+    // This prevents authentication bugs where new users see old users' names
+    const mergedUser = dashboard.user || {}
+    
+    // Only apply stored user fields that are NOT identity fields
+    // Keep occupation, state, language preferences but NOT name/email/user_id
+    const safeStoredUser = stored.user ? {
+      occupation: stored.user.occupation,
+      state: stored.user.state,
+      city: stored.user.city,
+      phone: stored.user.phone,
+      language: stored.user.language,
+      avatar_label: stored.user.avatar_label,
+      age: stored.user.age,
+      monthlyExpense: stored.user.monthlyExpense,
+    } : {}
+    
     return {
       ...dashboard,
-      user: { ...dashboard.user, ...stored.user },
+      user: {
+        ...mergedUser,
+        ...safeStoredUser,
+        // FORCE keep backend identity - never override from localStorage
+        user_id: mergedUser.user_id,
+        name: mergedUser.name,
+        email: mergedUser.email,
+      },
       settings: { ...dashboard.settings, ...stored.settings },
     }
   } catch {

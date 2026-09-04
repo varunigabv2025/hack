@@ -20,6 +20,14 @@ const getDashboard = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
+    // AUTHORIZATION: Ensure user can only access their own dashboard
+    if (req.user.user_id !== userId) {
+      const error = new Error('Unauthorized: You can only access your own dashboard');
+      error.statusCode = 403;
+      error.code = 'FORBIDDEN';
+      throw error;
+    }
+
     // Fetch user profile
     const user = await User.findOne({ user_id: userId }).lean();
     if (!user) {
@@ -55,6 +63,34 @@ const getDashboard = async (req, res, next) => {
     // Get latest transaction
     const latestTransaction = recentTransactions.length > 0 ? recentTransactions[0] : null;
 
+    // CRITICAL FIX: Calculate today's income from transactions
+    // Get today's date in YYYY-MM-DD format (local date, not UTC)
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
+    // Find all transactions for today
+    // Transactions are stored with date as ISO string or Date object
+    // We need to compare just the date part (YYYY-MM-DD)
+    const todaysTransactions = recentTransactions.filter(txn => {
+      if (!txn.date) return false;
+      
+      // Get date string in YYYY-MM-DD format
+      let txnDateStr;
+      if (typeof txn.date === 'string') {
+        // Handle both "YYYY-MM-DD" and "YYYY-MM-DDTHH:MM:SS.sssZ" formats
+        txnDateStr = txn.date.split('T')[0];
+      } else {
+        // Date object - extract YYYY-MM-DD
+        const d = new Date(txn.date);
+        txnDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      }
+      
+      return txnDateStr === todayStr;
+    });
+    
+    // Sum up today's income
+    const todayIncome = todaysTransactions.reduce((sum, txn) => sum + (txn.amount || 0), 0);
+
     // Build dashboard response
     const dashboard = {
       success: true,
@@ -69,6 +105,8 @@ const getDashboard = async (req, res, next) => {
       },
       financial_profile: financialProfile ? {
         income_profile: {
+          today_income: todayIncome > 0 ? todayIncome : null, // Add today's income
+          today: todayIncome > 0 ? todayIncome : null, // Also provide as 'today' for compatibility
           baseline: financialProfile.baseline,
           volatility: financialProfile.volatility,
           consistency: financialProfile.consistency,
@@ -94,6 +132,8 @@ const getDashboard = async (req, res, next) => {
       } : {
         // Return empty structure if no financial profile yet
         income_profile: {
+          today_income: todayIncome > 0 ? todayIncome : null, // Add today's income even for new users
+          today: todayIncome > 0 ? todayIncome : null,
           baseline: 0,
           volatility: 'medium',
           consistency: 0,
@@ -121,7 +161,7 @@ const getDashboard = async (req, res, next) => {
       active_loans: activeLoans,
       goals: goals.map(toPublicGoal),
       nudge_context: financialProfile ? {
-        today_income: latestTransaction?.amount || 0,
+        today_income: todayIncome > 0 ? todayIncome : (latestTransaction?.amount || 0),
         baseline: financialProfile.baseline,
         trend: financialProfile.trend,
         surplus: financialProfile.surplus,

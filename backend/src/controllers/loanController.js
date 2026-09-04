@@ -24,14 +24,20 @@ const createLoan = async (req, res, next) => {
   try {
     const { user_id, loan_name, amount, monthly_payment, status } = req.body;
 
-    // Validate required fields
-    if (!user_id) {
-      const error = new Error('Missing required field: user_id');
-      error.statusCode = 400;
-      error.code = 'MISSING_USER_ID';
+    // AUTHORIZATION: Use authenticated user_id
+    const authenticatedUserId = req.user.user_id;
+    
+    // If client provides user_id, verify it matches authenticated user
+    if (user_id && user_id !== authenticatedUserId) {
+      const error = new Error('Unauthorized: Cannot create loan for another user');
+      error.statusCode = 403;
+      error.code = 'FORBIDDEN';
       throw error;
     }
 
+    const loanUserId = authenticatedUserId;
+
+    // Validate required fields
     if (!loan_name) {
       const error = new Error('Missing required field: loan_name');
       error.statusCode = 400;
@@ -77,7 +83,7 @@ const createLoan = async (req, res, next) => {
     }
 
     // Verify user exists
-    const user = await User.findOne({ user_id });
+    const user = await User.findOne({ user_id: loanUserId });
     if (!user) {
       const error = new Error('User not found. Create a profile first using POST /api/profile');
       error.statusCode = 404;
@@ -91,7 +97,7 @@ const createLoan = async (req, res, next) => {
     // Create and save loan
     const loan = await Loan.create({
       loan_id,
-      user_id,
+      user_id: loanUserId, // Use authenticated user_id
       loan_name,
       amount,
       monthly_payment,
@@ -123,6 +129,14 @@ const createLoan = async (req, res, next) => {
 const getLoans = async (req, res, next) => {
   try {
     const { userId } = req.params;
+
+    // AUTHORIZATION: Ensure user can only access their own loans
+    if (req.user.user_id !== userId) {
+      const error = new Error('Unauthorized: You can only access your own loans');
+      error.statusCode = 403;
+      error.code = 'FORBIDDEN';
+      throw error;
+    }
 
     // Verify user exists
     const user = await User.findOne({ user_id: userId });

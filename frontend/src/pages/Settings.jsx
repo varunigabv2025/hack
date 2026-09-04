@@ -44,9 +44,15 @@ export default function Settings() {
   
   const authenticatedUserName = getUserName()
   
-  function handleLogout() {
-    logout()
-    navigate('/login', { replace: true })
+  async function handleLogout() {
+    try {
+      await logout()
+      navigate('/login', { replace: true })
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Even if logout fails, navigate to login
+      navigate('/login', { replace: true })
+    }
   }
 
   const LANGUAGES = [

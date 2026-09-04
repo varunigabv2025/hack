@@ -27,14 +27,21 @@ const createTransaction = async (req, res, next) => {
   try {
     const { user_id, amount, date, source } = req.body;
 
-    // Validate required fields
-    if (!user_id) {
-      const error = new Error('Missing required field: user_id');
-      error.statusCode = 400;
-      error.code = 'MISSING_USER_ID';
+    // AUTHORIZATION: Use authenticated user_id, don't trust client-provided user_id
+    const authenticatedUserId = req.user.user_id;
+    
+    // If client provides user_id, verify it matches authenticated user
+    if (user_id && user_id !== authenticatedUserId) {
+      const error = new Error('Unauthorized: Cannot create transaction for another user');
+      error.statusCode = 403;
+      error.code = 'FORBIDDEN';
       throw error;
     }
 
+    // Use authenticated user_id
+    const transactionUserId = authenticatedUserId;
+
+    // Validate required fields
     if (amount === undefined || amount === null) {
       const error = new Error('Missing required field: amount');
       error.statusCode = 400;
@@ -74,7 +81,7 @@ const createTransaction = async (req, res, next) => {
     }
 
     // Verify user exists
-    const user = await User.findOne({ user_id });
+    const user = await User.findOne({ user_id: transactionUserId });
     if (!user) {
       const error = new Error('User not found. Create a profile first using POST /api/profile');
       error.statusCode = 404;
@@ -88,7 +95,7 @@ const createTransaction = async (req, res, next) => {
     // Create and save transaction
     const transaction = await Transaction.create({
       transaction_id,
-      user_id,
+      user_id: transactionUserId, // Use authenticated user_id
       amount,
       date: transactionDate,
       source
@@ -118,6 +125,14 @@ const getTransactions = async (req, res, next) => {
     const { userId } = req.params;
     const limit = parseInt(req.query.limit) || 50;
     const offset = parseInt(req.query.offset) || 0;
+
+    // AUTHORIZATION: Ensure user can only access their own transactions
+    if (req.user.user_id !== userId) {
+      const error = new Error('Unauthorized: You can only access your own transactions');
+      error.statusCode = 403;
+      error.code = 'FORBIDDEN';
+      throw error;
+    }
 
     // Verify user exists
     const user = await User.findOne({ user_id: userId });

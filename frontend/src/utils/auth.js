@@ -1,38 +1,30 @@
 /**
- * DEMO AUTHENTICATION UTILITY
+ * REAL AUTHENTICATION UTILITY
  * 
- * IMPORTANT: This is DEMO authentication for the hackathon build.
- * - NO real password validation
- * - NO secure token management
- * - NO production-grade security
- * 
- * This simply gates the application behind a login screen and manages
- * the demo user session (U001 - Rajesh Kumar).
- * 
- * For production, replace this with proper authentication:
- * - JWT tokens
- * - Secure password hashing
+ * This implements real authentication with:
+ * - Backend JWT authentication
  * - HTTP-only cookies
- * - CSRF protection
- * - Session management
+ * - Secure password handling
+ * - User data isolation
+ * 
+ * Authentication state is verified with the backend on page load.
  */
 
-const AUTH_FLAG_KEY = 'isLoggedIn'
-const USER_DATA_KEY = 'demoUser'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const USER_DATA_KEY = 'user'
 
 /**
  * Check if user is authenticated
+ * Note: This is a client-side hint only. Real authentication is server-side.
  * @returns {boolean}
  */
 export function isAuthenticated() {
-  return (
-    localStorage.getItem(AUTH_FLAG_KEY) === 'true' ||
-    sessionStorage.getItem(AUTH_FLAG_KEY) === 'true'
-  )
+  return localStorage.getItem(USER_DATA_KEY) !== null || sessionStorage.getItem(USER_DATA_KEY) !== null
 }
 
 /**
- * Get the currently authenticated user
+ * Get the currently authenticated user from local storage
+ * Note: This is cached data. Use verifyAuth() to verify with backend.
  * @returns {{ user_id: string, name: string, email: string } | null}
  */
 export function getCurrentUser() {
@@ -69,55 +61,168 @@ export function getUserName() {
 }
 
 /**
- * Perform demo login
- * @param {{ remember?: boolean, user: { user_id: string, name: string, email: string } }} options
+ * Store user data locally
+ * @param {{ user_id: string, name: string, email: string }} user
+ * @param {boolean} remember - Whether to persist across browser sessions
  */
-export function login({ remember = false, user }) {
-  if (!user || !user.user_id) {
-    throw new Error('Invalid user data: user_id is required')
-  }
-  
-  // Choose storage based on "remember me"
+function storeUser(user, remember = false) {
   const storage = remember ? localStorage : sessionStorage
   const otherStorage = remember ? sessionStorage : localStorage
   
   // Clear any stale auth from the other storage
-  otherStorage.removeItem(AUTH_FLAG_KEY)
   otherStorage.removeItem(USER_DATA_KEY)
   
-  // Store authentication
-  storage.setItem(AUTH_FLAG_KEY, 'true')
+  // Store user data (NOT password)
   storage.setItem(USER_DATA_KEY, JSON.stringify(user))
+  
+  // CRITICAL: Clear old profile data to prevent identity mixing
+  // This ensures the new user's identity from backend is not overridden
+  localStorage.removeItem('re_profile')
 }
 
 /**
- * Logout the current user
+ * Clear authentication state
  */
-export function logout() {
-  // Clear from both storages
-  localStorage.removeItem(AUTH_FLAG_KEY)
+function clearAuth() {
   localStorage.removeItem(USER_DATA_KEY)
-  sessionStorage.removeItem(AUTH_FLAG_KEY)
   sessionStorage.removeItem(USER_DATA_KEY)
+  // Also clear profile data to prevent identity issues on next login
+  localStorage.removeItem('re_profile')
 }
 
 /**
- * Demo user credentials for U001 (existing seeded user)
- * This is the ONLY demo user. Do NOT use U001 for new real users.
+ * Register a new user
+ * @param {object} userData - User registration data
+ * @param {string} userData.name
+ * @param {string} userData.email
+ * @param {string} userData.password
+ * @param {number} userData.age
+ * @param {string} userData.occupation
+ * @param {string} userData.state
+ * @param {string} userData.language
+ * @param {number} userData.monthly_expense
+ * @param {boolean} remember - Remember user session
+ * @returns {Promise<{ success: boolean, user: object }>}
  */
-export const DEMO_USER = {
-  user_id: 'U001',
-  name: 'Rajesh Kumar',
-  email: 'rajesh.kumar@demo.resilience.app'
+export async function register(userData, remember = false) {
+  try {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include', // Include cookies
+      body: JSON.stringify(userData)
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Registration failed')
+    }
+
+    // Store user data locally
+    if (data.user) {
+      storeUser(data.user, remember)
+    }
+
+    return data
+
+  } catch (error) {
+    console.error('Registration error:', error)
+    throw error
+  }
 }
 
 /**
- * Perform demo login as U001 (existing seeded user)
- * @param {boolean} remember - Whether to remember the session
+ * Login user
+ * @param {string} email
+ * @param {string} password
+ * @param {boolean} remember - Remember user session
+ * @returns {Promise<{ success: boolean, user: object }>}
  */
-export function loginAsDemo(remember = true) {
-  login({
-    remember,
-    user: DEMO_USER
-  })
+export async function login(email, password, remember = false) {
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include', // Include cookies
+      body: JSON.stringify({ email, password })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Login failed')
+    }
+
+    // Store user data locally
+    if (data.user) {
+      storeUser(data.user, remember)
+    }
+
+    return data
+
+  } catch (error) {
+    console.error('Login error:', error)
+    throw error
+  }
+}
+
+/**
+ * Logout user
+ * @returns {Promise<void>}
+ */
+export async function logout() {
+  try {
+    await fetch(`${API_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include' // Include cookies
+    })
+  } catch (error) {
+    console.error('Logout error:', error)
+  } finally {
+    // Always clear local auth state
+    clearAuth()
+  }
+}
+
+/**
+ * Verify authentication with backend
+ * Checks if the user is actually authenticated on the server
+ * @returns {Promise<{ authenticated: boolean, user: object | null }>}
+ */
+export async function verifyAuth() {
+  try {
+    const response = await fetch(`${API_URL}/auth/me`, {
+      method: 'GET',
+      credentials: 'include' // Include cookies
+    })
+
+    if (!response.ok) {
+      // Not authenticated
+      clearAuth()
+      return { authenticated: false, user: null }
+    }
+
+    const data = await response.json()
+
+    // Update stored user data
+    if (data.user) {
+      const remember = localStorage.getItem(USER_DATA_KEY) !== null
+      storeUser(data.user, remember)
+    }
+
+    return {
+      authenticated: true,
+      user: data.user
+    }
+
+  } catch (error) {
+    console.error('Auth verification error:', error)
+    clearAuth()
+    return { authenticated: false, user: null }
+  }
 }

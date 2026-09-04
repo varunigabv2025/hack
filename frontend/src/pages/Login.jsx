@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { 
-  Eye, EyeOff, Globe2, Lock, Mail, ShieldCheck, 
-  Sparkles, UserRound, AlertCircle 
+  Eye, EyeOff, Globe2, ShieldCheck, 
+  Sparkles, AlertCircle 
 } from 'lucide-react'
-import { isAuthenticated, loginAsDemo } from '../utils/auth'
+import { isAuthenticated, login, verifyAuth } from '../utils/auth'
+import { hasTodaysIncome } from '../services/api'
 
 const highlights = [
   { icon: ShieldCheck, text: 'Loan-stacking & risk alerts' },
@@ -16,23 +17,23 @@ const highlights = [
 /**
  * Login Page
  * 
- * DEMO AUTHENTICATION - NOT PRODUCTION GRADE
+ * REAL AUTHENTICATION
  * 
- * This is a demo login for hackathon purposes only.
- * - No real password validation
- * - No secure authentication
- * - Demo user = U001 (Rajesh Kumar, existing seeded user)
+ * This page implements real authentication with:
+ * - Email/password validation
+ * - Backend JWT authentication
+ * - HTTP-only cookies
+ * - Secure password handling
  * 
- * Flow: Login → /income-setup → Dashboard
+ * Flow: 
+ * - Login → Authenticate with backend
+ * - Check today's income
+ * - If income exists for today → Dashboard
+ * - If no income for today → Income Setup → Dashboard
  */
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  
-  // If already authenticated, redirect
-  if (isAuthenticated()) {
-    return <Navigate to="/income-setup" replace />
-  }
   
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
@@ -40,34 +41,72 @@ export default function Login() {
   const [remember, setRemember] = useState(true)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
   
-  function handleDemoLogin() {
-    setError('')
-    setSubmitting(true)
-    
-    // Simulate brief loading
-    setTimeout(() => {
-      loginAsDemo(remember)
-      navigate('/income-setup', { replace: true })
-    }, 400)
+  // Check if already authenticated and redirect appropriately
+  useEffect(() => {
+    async function checkAuth() {
+      if (isAuthenticated()) {
+        try {
+          // Verify authentication with backend
+          const { authenticated } = await verifyAuth()
+          
+          if (authenticated) {
+            const hasIncome = await hasTodaysIncome()
+            navigate(hasIncome ? '/' : '/income-setup', { replace: true })
+          } else {
+            setCheckingAuth(false)
+          }
+        } catch (error) {
+          console.error('Auth check error:', error)
+          setCheckingAuth(false)
+        }
+      } else {
+        setCheckingAuth(false)
+      }
+    }
+    checkAuth()
+  }, [navigate])
+  
+  if (checkingAuth && isAuthenticated()) {
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-animated-gradient">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-burgundy border-t-transparent" />
+      </div>
+    )
   }
   
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     
     if (!identifier.trim() || !password.trim()) {
-      setError('Please enter your email/mobile number and password.')
+      setError('Please enter your email and password.')
       return
     }
     
     setError('')
     setSubmitting(true)
     
-    // For hackathon: any non-empty credentials → demo login
-    setTimeout(() => {
-      loginAsDemo(remember)
-      navigate('/income-setup', { replace: true })
-    }, 500)
+    try {
+      // Perform real login with backend
+      await login(identifier.trim(), password, remember)
+      
+      // Check if user has today's income
+      const hasIncome = await hasTodaysIncome()
+      
+      // Navigate based on today's income status
+      if (hasIncome) {
+        // Income already entered today → go to dashboard
+        navigate('/', { replace: true })
+      } else {
+        // No income for today → go to income setup
+        navigate('/income-setup', { replace: true })
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setError(error.message || 'Login failed. Please check your credentials and try again.')
+      setSubmitting(false)
+    }
   }
   
   return (
@@ -117,14 +156,7 @@ export default function Login() {
           </div>
         </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="relative text-xs text-white/50"
-        >
-          Income clarity. Savings discipline. Scheme guidance.
-        </motion.p>
+
       </div>
 
       {/* Right form panel */}
@@ -153,37 +185,27 @@ export default function Login() {
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
               <label className="block" htmlFor="login-identifier">
-                <span className="mb-1.5 block text-sm text-muted">Email or mobile number</span>
-                <div className="relative">
-                  <Mail 
-                    className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" 
-                    aria-hidden="true" 
-                  />
-                  <input
-                    id="login-identifier"
-                    type="text"
-                    autoComplete="username"
-                    className="input pl-10"
-                    placeholder="Enter email or mobile number"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    disabled={submitting}
-                  />
-                </div>
+                <span className="mb-1.5 block text-sm text-muted">Email</span>
+                <input
+                  id="login-identifier"
+                  type="email"
+                  autoComplete="email"
+                  className="input px-4"
+                  placeholder="Enter your email"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  disabled={submitting}
+                />
               </label>
 
               <label className="block" htmlFor="login-password">
                 <span className="mb-1.5 block text-sm text-muted">Password</span>
                 <div className="relative">
-                  <Lock 
-                    className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" 
-                    aria-hidden="true" 
-                  />
                   <input
                     id="login-password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
-                    className="input pl-10 pr-11"
+                    className="input pl-4 pr-11"
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -230,7 +252,7 @@ export default function Login() {
                   type="button"
                   disabled={submitting}
                   className="cursor-pointer text-sm font-semibold text-burgundy hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-                  onClick={() => alert('Password recovery available in production version. This is a demo build.')}
+                  onClick={() => alert('Password recovery will be available soon. Please contact support if you need assistance.')}
                 >
                   Forgot password?
                 </button>
@@ -254,26 +276,6 @@ export default function Login() {
               </motion.button>
             </form>
 
-            {/* Divider */}
-            <div className="my-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-line" />
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">or</span>
-              <div className="h-px flex-1 bg-line" />
-            </div>
-
-            {/* Demo user button */}
-            <motion.button
-              whileHover={{ scale: submitting ? 1 : 1.02 }}
-              whileTap={{ scale: submitting ? 1 : 0.98 }}
-              type="button"
-              onClick={handleDemoLogin}
-              disabled={submitting}
-              className="btn-secondary flex w-full items-center justify-center gap-2 text-sm"
-            >
-              <UserRound className="h-4 w-4" />
-              Continue as Demo User
-            </motion.button>
-
             {/* Create account */}
             <p className="mt-6 text-center text-sm text-muted">
               New here?{' '}
@@ -281,17 +283,12 @@ export default function Login() {
                 type="button"
                 disabled={submitting}
                 className="cursor-pointer font-semibold text-burgundy hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-                onClick={() => alert('Account creation available in production version. Use "Continue as Demo User" to explore the app.')}
+                onClick={() => navigate('/register')}
               >
                 Create account
               </button>
             </p>
           </div>
-
-          {/* Demo notice */}
-          <p className="mt-6 text-center text-xs text-muted">
-            Hackathon demo build — Demo authentication only, no data leaves your browser.
-          </p>
         </motion.div>
       </div>
     </div>

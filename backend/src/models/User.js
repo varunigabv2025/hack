@@ -12,6 +12,19 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address']
+  },
+  password_hash: {
+    type: String,
+    required: true,
+    select: false // Never include password_hash in queries by default
+  },
   age: {
     type: Number,
     required: true,
@@ -46,5 +59,14 @@ const userSchema = new mongoose.Schema({
 
 // Indexes for faster queries
 userSchema.index({ user_id: 1 });
+userSchema.index({ email: 1 });
+
+// Method to safely convert user to JSON (never expose password_hash)
+userSchema.methods.toSafeObject = function() {
+  const userObject = this.toObject();
+  delete userObject.password_hash;
+  delete userObject.__v;
+  return userObject;
+};
 
 module.exports = mongoose.model('User', userSchema);
