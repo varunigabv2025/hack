@@ -22,6 +22,8 @@ export default function Expenses() {
   const [essential, setEssential] = useState(true)
   const [description, setDescription] = useState('')
   const [filter, setFilter] = useState('All')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   const summary = data?.expenseSummary || {}
   const expenses = data?.expenses || []
@@ -31,17 +33,29 @@ export default function Expenses() {
     [expenses, filter],
   )
 
-  function onSubmit(e) {
+  async function onSubmit(e) {
     e.preventDefault()
-    addExpense({
-      id: `EXP${Date.now()}`,
-      date: new Date().toISOString().slice(0, 10),
-      amount: Number(amount) || 0,
-      category,
-      essential,
-      description,
-    })
-    setDescription('')
+    setSubmitting(true)
+    setSubmitError('')
+    
+    try {
+      await addExpense({
+        amount: Number(amount) || 0,
+        date: new Date().toISOString().slice(0, 10),
+        category,
+        essential,
+        description,
+      })
+      
+      // Clear form on success
+      setDescription('')
+      setAmount('200')
+    } catch (error) {
+      console.error('Failed to add expense:', error)
+      setSubmitError(error.message || 'Failed to add expense. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -51,7 +65,7 @@ export default function Expenses() {
       {status === 'ready' && data ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto max-w-3xl space-y-4">
           <div>
-            <p className="page-kicker">Member 1 backend</p>
+            <p className="page-kicker">Spending Tracker</p>
             <h2 className="mt-1 flex items-center gap-2.5 text-[1.85rem] font-bold text-burgundy">
               <Receipt className="h-8 w-8" /> {t('expensesTitle')}
             </h2>
@@ -96,17 +110,51 @@ export default function Expenses() {
 
           <article className="card-panel">
             <h3 className="mb-3 text-sm font-bold text-ink">{t('logAnExpense')}</h3>
+            {submitError && (
+              <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                {submitError}
+              </div>
+            )}
             <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
-              <input className="input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} placeholder={t('amount')} />
-              <select className="input" value={category} onChange={(e) => setCategory(e.target.value)}>
+              <input 
+                className="input" 
+                inputMode="numeric" 
+                value={amount} 
+                onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} 
+                placeholder={t('amount')}
+                disabled={submitting}
+              />
+              <select 
+                className="input" 
+                value={category} 
+                onChange={(e) => setCategory(e.target.value)}
+                disabled={submitting}
+              >
                 {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
               </select>
-              <input className="input sm:col-span-2" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('descriptionOptional')} />
+              <input 
+                className="input sm:col-span-2" 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)} 
+                placeholder={t('descriptionOptional')}
+                disabled={submitting}
+              />
               <label className="flex items-center gap-2 text-sm text-ink">
-                <input type="checkbox" checked={essential} onChange={(e) => setEssential(e.target.checked)} />
+                <input 
+                  type="checkbox" 
+                  checked={essential} 
+                  onChange={(e) => setEssential(e.target.checked)}
+                  disabled={submitting}
+                />
                 {t('essential')}
               </label>
-              <button type="submit" className="btn-primary">{t('saveExpense')}</button>
+              <button 
+                type="submit" 
+                className="btn-primary"
+                disabled={submitting}
+              >
+                {submitting ? 'Saving...' : t('saveExpense')}
+              </button>
             </form>
           </article>
 
@@ -123,17 +171,26 @@ export default function Expenses() {
                 </button>
               ))}
             </div>
-            <ul className="divide-y divide-line/60">
-              {visible.map((row) => (
-                <li key={row.id} className="flex items-center justify-between py-3">
-                  <div>
-                    <p className="font-semibold text-ink">{row.category}{row.essential ? ` · ${t('essential').toLowerCase()}` : ''}</p>
-                    <p className="text-xs text-muted">{row.date}{row.description ? ` · ${row.description}` : ''}</p>
-                  </div>
-                  <p className="font-semibold text-burgundy">{formatMoney(row.amount)}</p>
-                </li>
-              ))}
-            </ul>
+            {visible.length === 0 ? (
+              <div className="py-8 text-center">
+                <Receipt className="mx-auto h-12 w-12 text-muted opacity-30" />
+                <p className="mt-3 text-sm text-muted">
+                  {expenses.length === 0 ? 'No expenses logged yet.' : 'No expenses in this category.'}
+                </p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-line/60">
+                {visible.map((row) => (
+                  <li key={row.id || row.expense_id} className="flex items-center justify-between py-3">
+                    <div>
+                      <p className="font-semibold text-ink">{row.category}{row.essential ? ` · ${t('essential').toLowerCase()}` : ''}</p>
+                      <p className="text-xs text-muted">{row.date}{row.description ? ` · ${row.description}` : ''}</p>
+                    </div>
+                    <p className="font-semibold text-burgundy">{formatMoney(row.amount)}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </article>
         </motion.div>
       ) : null}
