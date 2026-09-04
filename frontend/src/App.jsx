@@ -15,6 +15,9 @@ import AiLab from './pages/AiLab'
 import Loans from './pages/Loans'
 import Expenses from './pages/Expenses'
 import IncomeSetup from './pages/IncomeSetup'
+import BadWeek from './pages/BadWeek'
+import Passport from './pages/Passport'
+import ResponsibleAi from './pages/ResponsibleAi'
 
 export default function App() {
   return (
@@ -27,6 +30,9 @@ export default function App() {
           {/* Protected routes */}
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/income-setup" element={<ProtectedRoute><IncomeSetup /></ProtectedRoute>} />
+          <Route path="/bad-week" element={<ProtectedRoute><BadWeek /></ProtectedRoute>} />
+          <Route path="/passport" element={<ProtectedRoute><Passport /></ProtectedRoute>} />
+          <Route path="/responsible-ai" element={<ProtectedRoute><ResponsibleAi /></ProtectedRoute>} />
           <Route path="/savings" element={<ProtectedRoute><Savings /></ProtectedRoute>} />
           <Route path="/score" element={<ProtectedRoute><ResilienceScorePage /></ProtectedRoute>} />
           <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
@@ -42,6 +48,11 @@ export default function App() {
           
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AppProvider>
+  )
+}
         </Routes>
       </BrowserRouter>
     </AppProvider>

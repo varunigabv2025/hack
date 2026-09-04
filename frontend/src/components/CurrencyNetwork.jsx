@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { currencies } from '../data/currencies'
 import { useMoney } from '../hooks/useMoney'
+import { useLang } from '../hooks/useLang'
 
 const markers = [
   { code: 'USD', left: '18%', top: '38%' },
@@ -13,6 +14,7 @@ const markers = [
 
 export default function CurrencyNetwork() {
   const { currency, setCurrency } = useMoney()
+  const { t } = useLang()
   const list = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'NGN'].map((code) =>
     currencies.find((c) => c.code === code),
   )
@@ -20,11 +22,11 @@ export default function CurrencyNetwork() {
   return (
     <section className="card">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Global Currency Network</h2>
-        <a href="/network" className="text-sm font-semibold text-burgundy hover:opacity-80 transition-opacity">View map</a>
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{t('globalCurrencyNetwork')}</h2>
+        <a href="/network" className="text-sm font-semibold text-burgundy hover:opacity-80 transition-opacity">{t('viewAll')}</a>
       </div>
 
-      <div className="relative mb-5 h-44 overflow-hidden rounded-2xl bg-gradient-to-br from-ivory to-burgundy-soft/20">
+      <div className="relative mb-5 h-44 overflow-hidden rounded-2xl bg-burgundy-soft">
         <svg viewBox="0 0 400 180" className="absolute inset-0 h-full w-full opacity-30" aria-hidden="true">
           {Array.from({ length: 18 }).map((_, i) => (
             <line key={`v-${i}`} x1={i * 22} y1="0" x2={i * 22} y2="180" stroke="#D6CFC5" strokeWidth="0.5" />
@@ -46,7 +48,7 @@ export default function CurrencyNetwork() {
               animate={{ scale: active ? 1.15 : 1, opacity: 1 }}
               transition={{ delay: 0.1 * i, type: 'spring', stiffness: 300 }}
               whileHover={{ scale: 1.3, y: -4 }}
-              aria-label={`Switch to ${c?.name}`}
+              aria-label={t('switchToCurrency', { code: c?.code || m.code })}
               aria-pressed={active}
               className="absolute flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-xs font-bold text-white shadow-lg"
               style={{
@@ -63,7 +65,7 @@ export default function CurrencyNetwork() {
       </div>
 
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {list.map((item, i) => {
+        {list.map((item) => {
           const active = currency === item.code
           return (
             <motion.li key={item.code}>

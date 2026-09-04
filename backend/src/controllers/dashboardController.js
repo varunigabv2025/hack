@@ -2,6 +2,8 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Loan = require('../models/Loan');
 const FinancialProfile = require('../models/FinancialProfile');
+const Goal = require('../models/Goal');
+const { toPublicGoal } = require('./goalController');
 
 /**
  * DASHBOARD CONTROLLER
@@ -41,6 +43,14 @@ const getDashboard = async (req, res, next) => {
       user_id: userId,
       status: 'active'
     }).lean();
+
+    // Fetch savings goals
+    const goals = await Goal.find({
+      user_id: userId,
+      status: { $in: ['active', 'completed'] },
+    })
+      .sort({ created_at: -1 })
+      .lean();
 
     // Get latest transaction
     const latestTransaction = recentTransactions.length > 0 ? recentTransactions[0] : null;
@@ -109,6 +119,7 @@ const getDashboard = async (req, res, next) => {
       latest_transaction: latestTransaction,
       recent_transactions: recentTransactions,
       active_loans: activeLoans,
+      goals: goals.map(toPublicGoal),
       nudge_context: financialProfile ? {
         today_income: latestTransaction?.amount || 0,
         baseline: financialProfile.baseline,
