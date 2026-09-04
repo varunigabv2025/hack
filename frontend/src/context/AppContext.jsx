@@ -2,16 +2,18 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   addTransaction,
   contributeGoal,
+  createExpense,
   createGoal,
   deleteGoal,
   depositToPocket as depositToPocketApi,
   fetchNudge,
   getDashboard,
+  getExpenses,
+  getExpenseSummary,
   isLiveApi,
   resetDemo,
 } from '../services/api'
 import {
-  addMockExpense,
   addMockGoal,
   addMockLoan,
   contributeMockGoal,
@@ -41,6 +43,33 @@ export function AppProvider({ children }) {
     setError(null)
     try {
       const payload = normalizeDashboard(await getDashboard())
+      
+      // Fetch expenses separately if backend API is available
+      if (isLiveApi()) {
+        try {
+          const userId = payload.user?.user_id || payload.user?.id
+          if (userId) {
+            const expenseData = await getExpenses(userId, { summary: true })
+            const summary = await getExpenseSummary(userId)
+            
+            // Merge expenses into dashboard
+            payload.expenses = expenseData.expenses || []
+            payload.expenseSummary = summary
+          }
+        } catch (expenseError) {
+          console.error('Failed to fetch expenses:', expenseError)
+          // Continue with dashboard data even if expenses fail
+          payload.expenses = []
+          payload.expenseSummary = {
+            total_expenses: 0,
+            essential_expenses: 0,
+            non_essential_expenses: 0,
+            expense_count: 0,
+            category_breakdown: {}
+          }
+        }
+      }
+      
       try {
         const nudge = await fetchNudge(payload)
         if (nudge?.message) payload.nudge = { ...payload.nudge, ...nudge }
@@ -73,11 +102,24 @@ export function AppProvider({ children }) {
     return payload
   }, [])
 
-  const addExpense = useCallback((expense) => {
-    const payload = normalizeDashboard(addMockExpense(expense))
-    setData(payload)
-    return payload
-  }, [])
+  const addExpense = useCallback(async (expense) => {
+    try {
+      // Create expense via backend API
+      await createExpense({
+        amount: expense.amount,
+        date: expense.date,
+        category: expense.category,
+        essential: expense.essential,
+        description: expense.description || ''
+      })
+      
+      // Refresh dashboard to get updated data
+      await refresh()
+    } catch (error) {
+      console.error('Failed to add expense:', error)
+      throw error
+    }
+  }, [refresh])
 
   const addLoan = useCallback((loan) => {
     const payload = normalizeDashboard(addMockLoan(loan))

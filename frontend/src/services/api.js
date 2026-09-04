@@ -271,3 +271,115 @@ export async function depositToPocket(amount) {
   const { depositMockPocket } = await import('../data/mockData')
   return depositMockPocket(amt)
 }
+
+/** ========================================
+ *  EXPENSE API - Backend Integration
+ *  ======================================== */
+
+/**
+ * Create a new expense
+ * @param {Object} expense - Expense data
+ * @param {number} expense.amount - Expense amount
+ * @param {string} expense.date - Date in YYYY-MM-DD format
+ * @param {string} expense.category - Expense category
+ * @param {boolean} expense.essential - Whether expense is essential
+ * @param {string} [expense.description] - Optional description
+ * @returns {Promise<Object>} Created expense
+ */
+export async function createExpense(expense) {
+  const userId = getUserId()
+  if (!userId) {
+    throw new Error('User not authenticated. Please log in.')
+  }
+  
+  if (!API_URL) {
+    await delay(280)
+    const { addMockExpense } = await import('../data/mockData')
+    return addMockExpense(expense)
+  }
+  
+  const payload = {
+    user_id: userId,
+    amount: expense.amount,
+    date: expense.date,
+    category: expense.category,
+    essential: expense.essential !== undefined ? expense.essential : false,
+    description: expense.description || ''
+  }
+  
+  return request(API_URL, '/expenses', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+/**
+ * Get user's expenses with optional filtering
+ * @param {string} userId - User ID
+ * @param {Object} [options] - Query options
+ * @param {number} [options.limit] - Number of expenses to return
+ * @param {boolean} [options.summary] - Include summary
+ * @returns {Promise<Object>} Expenses data
+ */
+export async function getExpenses(userId, options = {}) {
+  if (!userId) {
+    throw new Error('User ID is required')
+  }
+  
+  if (!API_URL) {
+    await delay(200)
+    const { getMockDashboard } = await import('../data/mockData')
+    const dashboard = getMockDashboard()
+    return {
+      expenses: dashboard.expenses || [],
+      summary: dashboard.expenseSummary || {}
+    }
+  }
+  
+  const params = new URLSearchParams()
+  if (options.limit) params.append('limit', options.limit)
+  if (options.summary !== undefined) params.append('summary', options.summary)
+  
+  const query = params.toString()
+  const path = query ? `/expenses/${userId}?${query}` : `/expenses/${userId}`
+  
+  const response = await request(API_URL, path)
+  
+  return {
+    expenses: response.expenses || [],
+    summary: response.summary || null
+  }
+}
+
+/**
+ * Get expense summary for a user
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Expense summary
+ */
+export async function getExpenseSummary(userId) {
+  if (!userId) {
+    throw new Error('User ID is required')
+  }
+  
+  if (!API_URL) {
+    await delay(200)
+    const { getMockDashboard } = await import('../data/mockData')
+    const dashboard = getMockDashboard()
+    return dashboard.expenseSummary || {
+      total_expenses: 0,
+      essential_expenses: 0,
+      non_essential_expenses: 0,
+      expense_count: 0,
+      category_breakdown: {}
+    }
+  }
+  
+  const response = await request(API_URL, `/expenses/${userId}/summary`)
+  return response.summary || {
+    total_expenses: 0,
+    essential_expenses: 0,
+    non_essential_expenses: 0,
+    expense_count: 0,
+    category_breakdown: {}
+  }
+}
